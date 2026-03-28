@@ -1,0 +1,19 @@
+#!/bin/sh
+# Runs before each commit. Install: npm run hooks:install (sets core.hooksPath to .hooks)
+# Bypass: SKIP_HOOKS=1 git commit ...
+
+set -e
+
+if [ "$SKIP_HOOKS" = "1" ]; then
+  exit 0
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT"
+
+if [ ! -f package.json ]; then
+  exit 0
+fi
+
+echo "pre-commit: npm run build"
+npm run build

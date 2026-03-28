@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "corpus": {
+    "mode": "all",
+    "sourceDir": "examples"
+  },
+  "defaults": {
+    "topK": 15,
+    "storeDir": ".pdf-to-rag-integrated-fixtures"
+  },
+  "cases": [
+    {
+      "id": "basic-brain-stats",
+      "query": "What are the weight and primary cell types of the human brain?",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["1.5 kg", "neurons", "glial cells"]
+      }
+    },
+    {
+      "id": "action-potential-mechanics",
+      "query": "Describe the electrical changes and ion channels involved in an action potential.",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["Na+ channels", "sodium ions", "100 mV", "depolarization"]
+      }
+    },
+    {
+      "id": "sleep-deprivation-case",
+      "query": "What happened to the student in the American Navy sleep experiment?",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["hallucinatory daydreaming", "difficulty with speech", "264 hours"]
+      }
+    },
+    {
+      "id": "atomistic-ion-simulations",
+      "query": "What simulation methods are used for the potassium channel KcsA?",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["Molecular dynamics", "Brownian dynamics", "Continuum electrostatics"]
+      }
+    },
+    {
+      "id": "stochastic-firing-models",
+      "query": "Explain the biophysical basis of firing variability and noise in cortical neurons.",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["Kramer’s formula", "Poisson process", "thermal motion", "synaptic unreliability"]
+      }
+    },
+    {
+      "id": "cross-doc-hippocampus",
+      "query": "How is the hippocampus described in relation to memory and place-specific firing?",
+      "expect": {
+        "minHits": 2,
+        "caseInsensitive": true,
+        "textContains": ["Hippocrates", "memory stores", "place-specific firing activity", "U-shaped track"]
+      }
+    },
+    {
+      "id": "cross-doc-plasticity",
+      "query": "Link the concept of neuronal plasticity to Spike-Timing-Dependent Plasticity (STDP) models.",
+      "expect": {
+        "minHits": 2,
+        "textContains": ["analogy with plasticine", "Hebbian learning", "STDP", "synaptic strength"]
+      }
+    },
+    {
+      "id": "liquid-state-machines",
+      "query": "What are the properties of a Liquid State Machine in microcircuit modeling?",
+      "expect": {
+        "minHits": 1,
+        "textContains": ["fading memory", "universal approximation", "kernel function", "linear readouts"]
+      }
+    }
+  ]
+}

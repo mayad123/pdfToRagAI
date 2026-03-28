@@ -1,0 +1,40 @@
+---
+description: pdf-to-rag architecture, MCP boundaries, and contribution constraints
+globs: "**/*.{ts,tsx,md,json}"
+---
+
+# pdf-to-rag project rules
+
+## Layers
+
+1. **CLI** (`src/commands/`, `src/cli.ts`) — argv and stdout only.
+2. **MCP** (`src/mcp/`) — stdio transport, tool schemas, path policy, JSON mapping. No ingest/query pipeline logic here.
+3. **Application** (`src/application/`) — orchestration: `runIngest`, `runQuery`, `runInspect`, hooks.
+4. **Domain** (`src/domain/`) — types only; no I/O, no imports from pdf/storage/mcp/cli.
+5. **Pipeline / infrastructure** (`src/ingestion/`, `src/pdf/`, `src/storage/`, etc.) — single-purpose modules.
+
+MCP and CLI must call the **library/application API** (`createAppDeps`, `runIngest`, …). Do not reimplement the pipeline inside `src/mcp/`.
+
+## Product constraints
+
+- TypeScript only for implementation; local-first; no required paid APIs.
+- **Embeddings:** default **Transformers.js**; optional **local Ollama** HTTP (`PDF_TO_RAG_EMBED_BACKEND`, `OLLAMA_EMBED_MODEL`, `OLLAMA_HOST`) for faster ingest on capable hardware. No paid cloud embedding APIs unless product scope changes.
+- Preserve metadata (file, page, chunk id) through ingest and in tool responses.
+- Prefer small files and clear interfaces over clever abstractions.
+
+## Hooks
+
+- Runtime extension points live in `src/hooks/`. MCP may register logging hooks; do not change hook payload shapes without updating docs and consumers.
+
+## Documentation ownership
+
+- User-facing MCP and security notes belong in `docs/use/mcp.md`. Contributor roles: `docs/contributing/agents.md`.
+
+## Testing
+
+- Run `npm run build` after TypeScript changes.
+- Optional: `npm run mcp:smoke` after MCP changes.
+
+## Cursor (one line)
+
+Procedural workflows live in **`.cursor/skills/`**; manual **`/pdf-*`** commands in `.cursor/commands/` load those procedures—see **`docs/contributing/agents.md`** for rules vs skills vs commands.

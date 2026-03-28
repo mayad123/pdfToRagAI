@@ -1,0 +1,9 @@
+# pdf-to-rag
+
+Passive conventions: **`.cursor/rules/pdf-to-rag.mdc`**. Procedural workflows: **`.cursor/skills/pdf-rag-*/SKILL.md`**.
+
+Documentation index: **`docs/README.md`**. How rules / skills / commands relate: **`docs/contributing/agents.md`**.
+
+**Embeddings:** default **Transformers.js** (`createEmbedder` / `createTransformersEmbedder`); optional fast path **`PDF_TO_RAG_EMBED_BACKEND=ollama`** with **`OLLAMA_EMBED_MODEL`** — see **`docs/management/requirements.md`** (F7, N3) and **`/pdf-embeddings`**.
+
+Manual slash commands: **`/pdf-*`** in **`.cursor/commands/`**. Subagents: **`.cursor/agents/`**. Full doc sync: **`/pdf-update-docs`**.
