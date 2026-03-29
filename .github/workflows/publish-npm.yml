@@ -1,0 +1,68 @@
+# Publish pdf-to-rag to the public npm registry when a GitHub Release is published.
+#
+# Prerequisites (repository settings):
+#   - Secret NPM_TOKEN: npm "Automation" access token with publish rights for this package.
+#     (Alternative: configure npm "trusted publishers" for this repo and OIDC; then you may
+#     omit the secret and use `npm publish --provenance` per https://docs.npmjs.com/trusted-publishers )
+#
+# Release process:
+#   1. Bump version in package.json on main (semver).
+#   2. Tag git as vX.Y.Z matching that version (leading "v" only).
+#   3. Create a GitHub Release from that tag (Publish release) — this workflow runs on release published.
+#   4. The job fails if the release tag (without "v") does not equal package.json "version".
+
+name: Publish npm
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify npm pack
+        run: npm pack --dry-run
+
+      - name: Verify release tag matches package.json version
+        shell: bash
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          RAW="$TAG_NAME"
+          STRIPPED="${RAW#v}"
+          PKG=$(node -p "require('./package.json').version")
+          if [[ "$STRIPPED" != "$PKG" ]]; then
+            echo "Release tag \"$RAW\" normalizes to \"$STRIPPED\" but package.json version is \"$PKG\"."
+            exit 1
+          fi
+          echo "Version check OK: $PKG"
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public

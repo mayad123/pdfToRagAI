@@ -14,6 +14,8 @@
       "query": "What are the weight and primary cell types of the human brain?",
       "expect": {
         "minHits": 1,
+        "inTopK": 5,
+        "minScore": 0.38,
         "textContains": ["1.5 kg", "neurons", "glial cells"]
       }
     },
@@ -22,6 +24,8 @@
       "query": "Describe the electrical changes and ion channels involved in an action potential.",
       "expect": {
         "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.35,
         "textContains": ["Na+ channels", "sodium ions", "100 mV", "depolarization"]
       }
     },
@@ -30,6 +34,8 @@
       "query": "What happened to the student in the American Navy sleep experiment?",
       "expect": {
         "minHits": 1,
+        "inTopK": 5,
+        "minScore": 0.40,
         "textContains": ["hallucinatory daydreaming", "difficulty with speech", "264 hours"]
       }
     },
@@ -38,6 +44,8 @@
       "query": "What simulation methods are used for the potassium channel KcsA?",
       "expect": {
         "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.35,
         "textContains": ["Molecular dynamics", "Brownian dynamics", "Continuum electrostatics"]
       }
     },
@@ -46,7 +54,9 @@
       "query": "Explain the biophysical basis of firing variability and noise in cortical neurons.",
       "expect": {
         "minHits": 1,
-        "textContains": ["Kramer’s formula", "Poisson process", "thermal motion", "synaptic unreliability"]
+        "inTopK": 8,
+        "minScore": 0.33,
+        "textContains": ["Kramer's formula", "Poisson process", "thermal motion", "synaptic unreliability"]
       }
     },
     {
@@ -54,6 +64,8 @@
       "query": "How is the hippocampus described in relation to memory and place-specific firing?",
       "expect": {
         "minHits": 2,
+        "inTopK": 10,
+        "minScore": 0.30,
         "caseInsensitive": true,
         "textContains": ["Hippocrates", "memory stores", "place-specific firing activity", "U-shaped track"]
       }
@@ -63,6 +75,8 @@
       "query": "Link the concept of neuronal plasticity to Spike-Timing-Dependent Plasticity (STDP) models.",
       "expect": {
         "minHits": 2,
+        "inTopK": 10,
+        "minScore": 0.30,
         "textContains": ["analogy with plasticine", "Hebbian learning", "STDP", "synaptic strength"]
       }
     },
@@ -71,7 +85,49 @@
       "query": "What are the properties of a Liquid State Machine in microcircuit modeling?",
       "expect": {
         "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.35,
         "textContains": ["fading memory", "universal approximation", "kernel function", "linear readouts"]
+      }
+    },
+    {
+      "id": "hodgkin-huxley-model",
+      "query": "Describe the Hodgkin-Huxley model for action potential generation in terms of conductance variables.",
+      "expect": {
+        "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.35,
+        "textContains": ["Hodgkin", "Huxley", "conductance"]
+      }
+    },
+    {
+      "id": "integrate-fire-neuron",
+      "query": "What is the leaky integrate-and-fire neuron model and what threshold does it use?",
+      "expect": {
+        "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.35,
+        "textContains": ["integrate-and-fire", "threshold"]
+      }
+    },
+    {
+      "id": "ltp-synaptic-plasticity",
+      "query": "Explain long-term potentiation as a cellular mechanism for learning and memory.",
+      "expect": {
+        "minHits": 1,
+        "inTopK": 10,
+        "minScore": 0.30,
+        "textContains": ["long-term potentiation", "synaptic"]
+      }
+    },
+    {
+      "id": "resting-membrane-potential",
+      "query": "How is the resting membrane potential established and maintained in neurons?",
+      "expect": {
+        "minHits": 1,
+        "inTopK": 8,
+        "minScore": 0.33,
+        "textContains": ["resting", "membrane potential", "potassium"]
       }
     }
   ]

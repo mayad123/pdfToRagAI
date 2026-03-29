@@ -51,7 +51,19 @@ npm run build
 npm run mcp:smoke
 ```
 
-Expected: a line like `mcp:smoke ok: ingest, inspect, query`. If it fails, ensure `dist/mcp/server.js` exists after `build` and Node is 18+.
+Expected: a line like `mcp:smoke ok: ingest, inspect, query, search + ingest default path`. If it fails, ensure `dist/mcp/server.js` exists after `build` and Node is 18+.
+
+## HTTP/SSE transport (alternate)
+
+For MCP hosts that cannot use stdio (e.g. remote deployments, web clients), use the HTTP server instead:
+
+```bash
+npm run mcp:http        # demo UI http://127.0.0.1:3000/  ·  MCP http://127.0.0.1:3000/mcp
+# or
+PDF_TO_RAG_HTTP_PORT=4000 node dist/mcp/server-http.js
+```
+
+All the same tools and env vars apply. **`GET /`** serves a **vanilla HTML** demo that calls **`/mcp`** (see [use/mcp.md § Web demo UI](../use/mcp.md#web-demo-ui-f19)). The stdio server (`dist/mcp/server.js`) remains the recommended transport for local single-user setups. See [use/mcp.md § HTTP/SSE transport](../use/mcp.md#httpsse-transport-phase-5) for full options.
 
 ## Configure Cursor (MCP)
 
@@ -81,10 +93,11 @@ Minimal pattern (corpus under project root, explicit relative path on ingest):
 Use these from the MCP client after the server connects:
 
 1. **`inspect`** — Confirms the index path and chunk count (often `0` before first ingest).
-2. **`ingest`** — Index your corpus: pass `path` (e.g. `"examples"` or an absolute dir), or omit `path` if **`PDF_TO_RAG_SOURCE_DIR`** is set. First run can be slow (model load + embeddings), especially for huge PDF sets on the **default Transformers** path; **Ollama + GPU/Metal** is recommended for that case.
-3. **`query`** — Pass a `question`; results include `text`, `fileName`, and `page` citations.
+2. **`ingest`** — Index your corpus: pass `path` (e.g. `"examples"` or an absolute dir), or omit `path` if **`PDF_TO_RAG_SOURCE_DIR`** is set. Unchanged PDFs are skipped on later runs (**F13**). First run can be slow (model load + embeddings), especially for huge PDF sets on the **default Transformers** path; **Ollama + GPU/Metal** is recommended for that case.
+3. **`query`** — Pass a `question`; optional `minScore`, `mmr`, `mmrLambda`, `topK`. Results include `text`, `fileName`, and `page` citations. For short or abstract questions, optionally pass `hypotheticalAnswer` (a caller-generated answer) to use **HyDE** — the server embeds it as a passage instead of the raw question, closing the query-to-passage gap (**F15**).
+4. **`search`** (optional) — Same as **`query`**, but if the index is empty it **auto-ingests** from `sourceDir` or **`PDF_TO_RAG_SOURCE_DIR`** first — convenient for single-step Q&A.
 
-The **first** `ingest` or **`query`** in a process loads the embedding model; expect delay and CPU use until the model is cached.
+The **first** `ingest`, **`query`**, or **`search`** in a process loads the embedding model; expect delay and CPU use until the model is cached.
 
 ## Where to go next
 

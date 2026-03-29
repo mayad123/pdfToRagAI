@@ -2,6 +2,7 @@ import { join, resolve } from "node:path";
 import type { PdfToRagConfig } from "../config/defaults.js";
 import { createOllamaEmbedder, createTransformersEmbedder } from "../embeddings.js";
 import { FileVectorStore } from "../storage/file-store.js";
+import type { Embedder } from "../embeddings.js";
 import type { AppDeps } from "./deps.js";
 
 function embedBackendFromEnv(): "transformers" | "ollama" {
@@ -10,11 +11,18 @@ function embedBackendFromEnv(): "transformers" | "ollama" {
   return "transformers";
 }
 
-export async function createAppDeps(
-  cwd: string,
-  config: PdfToRagConfig
-): Promise<AppDeps> {
-  const indexPath = join(resolve(cwd), config.storeDir, config.indexFileName);
+/** Resolved embedding model id string (stored in index header and config). */
+export function resolveEmbeddingModelId(config: PdfToRagConfig): string {
+  const backend = embedBackendFromEnv();
+  if (backend === "ollama") {
+    const ollamaModel = process.env.OLLAMA_EMBED_MODEL?.trim() ?? "";
+    return `ollama:${ollamaModel}`;
+  }
+  return config.embeddingModel;
+}
+
+/** Creates only the Embedder for the configured backend. */
+export async function createAppEmbedder(config: PdfToRagConfig): Promise<Embedder> {
   const backend = embedBackendFromEnv();
 
   if (backend === "ollama") {
@@ -25,14 +33,20 @@ export async function createAppDeps(
       );
     }
     const host = process.env.OLLAMA_HOST?.trim() || "http://127.0.0.1:11434";
-    const embeddingModelId = `ollama:${ollamaModel}`;
-    const store = new FileVectorStore(indexPath, embeddingModelId);
-    const embedder = await createOllamaEmbedder(host, ollamaModel);
-    const merged: PdfToRagConfig = { ...config, embeddingModel: embeddingModelId };
-    return { config: merged, store, embedder };
+    return createOllamaEmbedder(host, ollamaModel);
   }
 
-  const store = new FileVectorStore(indexPath, config.embeddingModel);
-  const embedder = await createTransformersEmbedder(config.embeddingModel);
-  return { config, store, embedder };
+  return createTransformersEmbedder(config.embeddingModel);
+}
+
+export async function createAppDeps(
+  cwd: string,
+  config: PdfToRagConfig
+): Promise<AppDeps> {
+  const embedder = await createAppEmbedder(config);
+  const embeddingModelId = resolveEmbeddingModelId(config);
+  const indexPath = join(resolve(cwd), config.storeDir, config.indexFileName);
+  const store = new FileVectorStore(indexPath, embeddingModelId);
+  const merged: PdfToRagConfig = { ...config, embeddingModel: embeddingModelId };
+  return { config: merged, store, embedder };
 }

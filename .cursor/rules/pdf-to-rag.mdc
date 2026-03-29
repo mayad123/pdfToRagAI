@@ -33,7 +33,7 @@ MCP and CLI must call the **library/application API** (`createAppDeps`, `runInge
 ## Testing
 
 - Run `npm run build` after TypeScript changes.
-- Optional: `npm run mcp:smoke` after MCP changes.
+- Optional: `npm run mcp:smoke` after MCP changes; `npm run examples:smoke` / `examples:fixtures` for retrieval checks; `eval:*` scripts for gold-set eval (see `docs/management/project.md` § Testing and evaluation methodology).
 
 ## Cursor (one line)
 

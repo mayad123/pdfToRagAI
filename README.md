@@ -1,6 +1,15 @@
 # pdf-to-rag
 
-**Local-first RAG over PDFs:** index a folder of documents, embed text on your machine, and run **natural-language queries** that return **verbatim passages** with **file name and page**—so you can quote sources, not paraphrases. Ships as a **TypeScript CLI**, **library**, and optional **MCP server** for tools like Cursor.
+[![CI](https://img.shields.io/github/actions/workflow/status/mayadevarajan/pdfToRag/ci.yml?branch=main&label=CI)](https://github.com/mayadevarajan/pdfToRag/actions/workflows/ci.yml)
+· [Ecosystem comparison](docs/use/comparison.md)
+
+**Try it:** `npx pdf-to-rag ingest ./path/to/pdfs` then `npx pdf-to-rag query "Your natural-language question"` (requires [Node.js 18+](https://nodejs.org/); first run may download the default embedding model).
+
+**What it is:** pdf-to-rag builds a **local-first** index over folders of PDFs—default embeddings use **Transformers.js** on your machine (**no paid API keys**)—and **query** returns **ranked verbatim passages** with **file name and page** so you can cite sources instead of trusting a paraphrase.
+
+**Who it’s for:** developers and researchers who want a **small, auditable** pipeline plus **CLI**, **library**, and **MCP** (`stdio` or HTTP) surfaces—without committing to a large agent framework.
+
+![Terminal-style preview: ingest then query with citations](docs/assets/hero-terminal.svg)
 
 ---
 
@@ -36,7 +45,7 @@ node dist/cli.js query your natural language question
 node dist/cli.js inspect
 ```
 
-Common flags: `--store-dir` (index directory, default `.pdf-to-rag`), `ingest` `--chunk-size` / `--overlap`, `query` `--top-k`. Index file: `<store-dir>/index.json`.
+Common flags: `--store-dir` (index directory, default `.pdf-to-rag`), `ingest` `--chunk-size` / `--overlap` / `--no-recursive` / `--no-strip-margins`, `query` `--top-k`. Index file: `<store-dir>/index.json`.
 
 <details>
 <summary><strong>Verify the toolchain</strong></summary>
@@ -51,46 +60,32 @@ Optional git hooks: `npm run hooks:install` — see [.hooks/README.md](.hooks/RE
 
 ---
 
-## Architecture
+<details>
+<summary><strong>Architecture (diagrams)</strong></summary>
 
 Entry points are thin; **CLI**, **library**, and **MCP** all call the same **application layer** (`runIngest`, `runQuery`, `runInspect`). The pipeline stays in `src/` modules (PDF → text → chunks → embeddings → JSON vector store).
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'background': '#0f1419',
-  'primaryColor': '#1e293b',
-  'primaryTextColor': '#e2e8f0',
-  'primaryBorderColor': '#334155',
-  'secondaryColor': '#0c1222',
-  'tertiaryColor': '#020617',
-  'lineColor': '#64748b',
-  'textColor': '#cbd5e1',
-  'mainBkg': '#1e293b',
-  'nodeBorder': '#475569',
-  'clusterBkg': '#0f172a',
-  'clusterBorder': '#334155',
-  'titleColor': '#f1f5f9'
-}}}%%
 flowchart TB
-  subgraph surfaces ["Surfaces"]
-    CLI["CLI · cli.ts"]
-    MCP["MCP · mcp/server.ts"]
-    LIB["Library · index.ts"]
+  subgraph Surfaces
+    CLI[CLI cli.ts]
+    MCP[MCP server.ts]
+    LIB[Library index.ts]
   end
-  subgraph app ["Application"]
-    F["createAppDeps · factory"]
-    RI["runIngest"]
-    RQ["runQuery"]
-    RS["runInspect"]
+  subgraph Application
+    F[createAppDeps]
+    RI[runIngest]
+    RQ[runQuery]
+    RS[runInspect]
   end
-  subgraph pipe ["Pipeline · src/"]
-    PDF["pdf/"]
-    NORM["normalization/"]
-    CHUNK["chunking/ · metadata/"]
-    INGP["ingestion/pipeline"]
-    EMB["embeddings · embedding/"]
-    STO["storage/"]
-    QRY["query/"]
+  subgraph Pipeline
+    PDF[pdf]
+    NORM[normalization]
+    CHUNK[chunking metadata]
+    INGP[ingestion pipeline]
+    EMB[embedding]
+    STO[storage]
+    QRY[query]
   end
   CLI --> RI
   CLI --> RQ
@@ -119,37 +114,21 @@ flowchart TB
 **Ingest and query data flow:**
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'background': '#0f1419',
-  'primaryColor': '#1e293b',
-  'primaryTextColor': '#e2e8f0',
-  'primaryBorderColor': '#334155',
-  'secondaryColor': '#0c1222',
-  'tertiaryColor': '#020617',
-  'lineColor': '#64748b',
-  'textColor': '#cbd5e1',
-  'mainBkg': '#1e293b',
-  'nodeBorder': '#475569',
-  'actorBkg': '#1e293b',
-  'actorBorder': '#475569',
-  'actorTextColor': '#e2e8f0',
-  'signalColor': '#94a3b8'
-}}}%%
 sequenceDiagram
-  participant U as User / host
-  participant A as Application run*
-  participant P as Ingest pipeline
-  participant E as Embedder
-  participant V as VectorStore JSON
-  participant Q as searchQuery
-  U->>A: ingest path / query question
-  A->>P: PDFs → chunks + metadata
-  P->>E: embed batch
-  P->>V: replaceAll chunks
-  A->>Q: question + deps
-  Q->>E: embedOne
-  Q->>V: cosine top-k
-  Q-->>U: QueryHit[] citations
+  participant User
+  participant App
+  participant Pipeline
+  participant Embedder
+  participant Store
+  participant Retriever
+  User->>App: ingest or query
+  App->>Pipeline: PDFs to chunks
+  Pipeline->>Embedder: embed batch
+  Pipeline->>Store: write chunks
+  App->>Retriever: query plus deps
+  Retriever->>Embedder: embed query
+  Retriever->>Store: topK search
+  Retriever-->>User: ranked hits
 ```
 
 <details>
@@ -165,6 +144,8 @@ Full file-level map: <a href="docs/architecture/overview.md">docs/architecture/o
 
 </details>
 
+</details>
+
 ---
 
 ## Documentation
@@ -173,6 +154,7 @@ Full file-level map: <a href="docs/architecture/overview.md">docs/architecture/o
 |----------|-------------|
 | [docs/README.md](docs/README.md) | Doc index |
 | [docs/use/cli-library.md](docs/use/cli-library.md) | CLI and library ↔ <code>src/</code> |
+| [docs/use/comparison.md](docs/use/comparison.md) | vs LangChain, LlamaIndex, Unstructured (positioning) |
 | [docs/use/mcp.md](docs/use/mcp.md) | MCP tools, env, security |
 | [docs/onboarding/mcp.md](docs/onboarding/mcp.md) | First-time MCP setup |
 | [docs/architecture/overview.md](docs/architecture/overview.md) | Deeper diagrams and tables |
@@ -183,7 +165,7 @@ Full file-level map: <a href="docs/architecture/overview.md">docs/architecture/o
 <details>
 <summary><strong>MCP server (AI tools)</strong></summary>
 
-After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <code>npx pdf-to-rag-mcp</code>. Configure corpus access with <code>PDF_TO_RAG_CWD</code>, <code>PDF_TO_RAG_ALLOWED_DIRS</code>, and optionally <code>PDF_TO_RAG_SOURCE_DIR</code>. Start here: <a href="docs/onboarding/mcp.md">docs/onboarding/mcp.md</a>; full reference: <a href="docs/use/mcp.md">docs/use/mcp.md</a>.
+After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <code>pdf-to-rag-mcp-http</code> (HTTP/SSE on port 3000) for hosts that cannot use stdio. Configure corpus access with <code>PDF_TO_RAG_CWD</code>, <code>PDF_TO_RAG_ALLOWED_DIRS</code>, and optionally <code>PDF_TO_RAG_SOURCE_DIR</code>. The <code>query</code> tool accepts an optional <code>hypotheticalAnswer</code> (HyDE) — pass a caller-generated hypothetical answer to improve retrieval for short or abstract questions. Enable cross-encoder reranking by setting <code>PDF_TO_RAG_RERANK_MODEL</code> to a Hugging Face cross-encoder id. Start here: <a href="docs/onboarding/mcp.md">docs/onboarding/mcp.md</a>; full reference: <a href="docs/use/mcp.md">docs/use/mcp.md</a>.
 
 <strong>Cursor:</strong> rules in <a href=".cursor/rules/">.cursor/rules/</a>, skills in <a href=".cursor/skills/">.cursor/skills/</a> (<code>pdf-rag-*</code>), commands in <a href=".cursor/commands/">.cursor/commands/</a>.
 
@@ -193,12 +175,12 @@ After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <co
 <summary><strong>CLI commands (reference)</strong></summary>
 
 ```bash
-pdf-to-rag ingest ./docs          # full reindex (recursive by default)
+pdf-to-rag ingest ./docs          # index corpus (recursive by default; unchanged PDFs skipped)
 pdf-to-rag query your question    # semantic search; summary line + passages + citations
 pdf-to-rag inspect               # chunk count / files (no embedder load)
 ```
 
-Options: <code>--store-dir</code>, ingest <code>--chunk-size</code>, <code>--overlap</code>, <code>--no-recursive</code>, query <code>--top-k</code>.
+Options: <code>--store-dir</code>, ingest <code>--chunk-size</code>, <code>--overlap</code>, <code>--no-recursive</code>, <code>--no-strip-margins</code>, query <code>--top-k</code>.
 
 </details>
 
@@ -253,18 +235,19 @@ See <a href="docs/management/requirements.md">docs/management/requirements.md</a
 - PDFs (or your own) under <a href="examples/">examples/</a> — <a href="examples/README.md">examples/README.md</a>
 - <code>npm run examples:smoke</code> — minimal ingest + query
 - <code>npm run examples:fixtures</code> — <code>examples/query-fixtures.json</code> NL + substring suite
+- <code>npm run eval:generate</code> / <code>eval:run</code> / <code>eval:compare</code> — synthetic gold-set generation, retrieval metrics, and A/B diff (see <a href="docs/management/project.md#testing-and-evaluation-methodology">docs/management/project.md</a> § Testing and evaluation methodology)
 
 </details>
 
 <details>
 <summary><strong>Limitations (current MVP)</strong></summary>
 
-- Full reindex on each <code>ingest</code> (no incremental updates).
-- Search is linear cosine over stored vectors — fine for modest corpora; replace <code>VectorStore</code> if you outgrow it.
+- <strong>Ingest</strong> skips PDFs whose mtime+size match the index (<strong>F13</strong>); new or changed files are re-chunked and re-embedded. Switching embedding backend or model still requires a full re-ingest so vectors stay in one space (<strong>F7</strong>).
+- Embeddings are stored as raw <code>Float32Array</code> in a binary <code>index.bin</code> sidecar (schema v3). Search is linear cosine below <code>PDF_TO_RAG_HNSW_THRESHOLD</code> (default 2000 chunks) and switches to HNSW approximate nearest-neighbor above it (<code>hnswlib-node</code>).
 - Scanned PDFs without extractable text are not a primary target.
 
 </details>
 
 ## License
 
-MIT
+[MIT](LICENSE)

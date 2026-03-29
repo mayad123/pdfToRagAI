@@ -8,5 +8,8 @@ tmp-sample/
 .pdf-to-rag-examples-smoke/
 .pdf-to-rag-examples-fixtures/
 .pdf-to-rag-integrated-fixtures/
+.pdf-to-rag-d8/
+.pdf-to-rag-linear/
 *.log
 .DS_Store
+var/

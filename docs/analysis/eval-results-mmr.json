@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-29T01:22:48.010Z",
+  "datasetPath": "docs/analysis/eval-dataset-phase7-sample.json",
+  "storeDir": ".pdf-to-rag-d8",
+  "embeddingModel": "Xenova/all-mpnet-base-v2",
+  "searchDepth": 50,
+  "mmr": true,
+  "mmrLambda": 0.6,
+  "rerankModel": null,
+  "summary": {
+    "totalItems": 4,
+    "notFound": 0,
+    "hitAt1": 0.75,
+    "hitAt3": 0.75,
+    "hitAt5": 0.75,
+    "hitAt10": 0.75,
+    "mrr": 0.7553191489361701,
+    "ndcg10": 0.75,
+    "meanGoldScore": 0.6157625317573547,
+    "meanTopHitScore": 0.627104789018631
+  },
+  "hardestCases": [
+    {
+      "chunkId": "6f96730e7ee5de08249f6a7cc416e44f",
+      "question": "What function is used to derive the joint probability for stochastic properties of a neural spike train?",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 273,
+      "rank": 47,
+      "goldScore": 0.6720646619796753
+    },
+    {
+      "chunkId": "db8ad646238f20d1c5787e33e60e9715",
+      "question": "What does the series aim to encourage by publishing textbooks and handbooks in mathematical and computational biology?",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 1,
+      "rank": 1,
+      "goldScore": 0.4627786874771118
+    },
+    {
+      "chunkId": "c7b37ceea8e0791a35fd7048d916cfdd",
+      "question": "What effect is produced in IT neurons with sample stimulus-related selectivity?",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 531,
+      "rank": 1,
+      "goldScore": 0.6717690229415894
+    },
+    {
+      "chunkId": "805e1cac9df95a2ceebc8d65ebec5055",
+      "question": "What are cytokines described as in the context of defence molecules?",
+      "sourceFile": "Neuroscience_-_Purves_etal._Neuroscience_6e.pdf",
+      "page": 39,
+      "rank": 1,
+      "goldScore": 0.6564377546310425
+    }
+  ],
+  "allCases": [
+    {
+      "chunkId": "db8ad646238f20d1c5787e33e60e9715",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 1,
+      "rank": 1,
+      "goldScore": 0.4627786874771118,
+      "reciprocalRank": 1,
+      "ndcg10": 1
+    },
+    {
+      "chunkId": "6f96730e7ee5de08249f6a7cc416e44f",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 273,
+      "rank": 47,
+      "goldScore": 0.6720646619796753,
+      "reciprocalRank": 0.02127659574468085,
+      "ndcg10": 0
+    },
+    {
+      "chunkId": "c7b37ceea8e0791a35fd7048d916cfdd",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 531,
+      "rank": 1,
+      "goldScore": 0.6717690229415894,
+      "reciprocalRank": 1,
+      "ndcg10": 1
+    },
+    {
+      "chunkId": "805e1cac9df95a2ceebc8d65ebec5055",
+      "sourceFile": "Neuroscience_-_Purves_etal._Neuroscience_6e.pdf",
+      "page": 39,
+      "rank": 1,
+      "goldScore": 0.6564377546310425,
+      "reciprocalRank": 1,
+      "ndcg10": 1
+    }
+  ]
+}

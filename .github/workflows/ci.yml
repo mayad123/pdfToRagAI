@@ -1,0 +1,74 @@
+# CI — build, native addon compilation, and tests
+#
+# Verifies that hnswlib-node (node-gyp native addon) compiles and the full
+# test suite passes across Node versions and OS/architecture combinations.
+#
+# Matrix:
+#   OS            Arch    Runner
+#   ----------    ------  -------------------------
+#   Linux         x64     ubuntu-latest
+#   Linux         arm64   ubuntu-22.04-arm          (standard GitHub runner; public repos only on free plan)
+#   macOS         x64     macos-13                  (last Intel runner)
+#   macOS         arm64   macos-latest              (Apple Silicon; M-series)
+#   Windows       x64     windows-latest
+#   Windows       arm64   (no GitHub-hosted runner available; skip)
+#
+# Node versions: 18 (minimum per engines field), 20 (current LTS)
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} / Node ${{ matrix.node-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - ubuntu-22.04-arm
+          - macos-13
+          - macos-latest
+          - windows-latest
+        node-version: ['18', '20']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # node-gyp requires Python. ubuntu-latest and macos runners ship Python 3
+      # by default. On Windows the setup-node action does not guarantee it, so
+      # we set the npm config to use the Python bundled with the runner.
+      - name: Configure Python for node-gyp (Windows)
+        if: runner.os == 'Windows'
+        run: npm config set python python3
+        shell: bash
+
+      # Install deps — triggers node-gyp rebuild for hnswlib-node (gypfile:true).
+      # On Linux the runner ships build-essential + python3.
+      # On macOS the runner ships Xcode Command Line Tools (clang).
+      # On Windows the runner ships MSVC Build Tools.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      # Publish readiness: tarball must pack cleanly (respects package.json "files").
+      - name: Verify npm pack
+        run: npm pack --dry-run

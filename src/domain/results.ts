@@ -1,5 +1,6 @@
 export interface IngestResult {
   filesProcessed: number;
+  filesSkipped?: number;
   pagesProcessed: number;
   chunksIndexed: number;
   storePath: string;

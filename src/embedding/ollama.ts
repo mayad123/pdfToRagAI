@@ -1,7 +1,23 @@
-import type { Embedder } from "./types.js";
+import type { Embedder, EmbedRole } from "./types.js";
 
 function normalizeBaseUrl(base: string): string {
   return base.replace(/\/$/, "");
+}
+
+/**
+ * Apply role-based prefix from env vars (F11).
+ * PDF_TO_RAG_QUERY_PREFIX / PDF_TO_RAG_PASSAGE_PREFIX, e.g. "query: " for E5 models.
+ */
+function applyRolePrefix(text: string, role?: EmbedRole): string {
+  if (role === "query") {
+    const prefix = process.env.PDF_TO_RAG_QUERY_PREFIX ?? "";
+    return prefix ? prefix + text : text;
+  }
+  if (role === "passage") {
+    const prefix = process.env.PDF_TO_RAG_PASSAGE_PREFIX ?? "";
+    return prefix ? prefix + text : text;
+  }
+  return text;
 }
 
 function l2Normalize(vec: number[]): number[] {
@@ -100,30 +116,32 @@ export async function createOllamaEmbedder(
     return mapPool(texts, concurrency, (t) => embedViaApiEmbeddingsOne(t));
   }
 
-  async function embedOne(text: string): Promise<number[]> {
+  async function embedOne(text: string, role?: EmbedRole): Promise<number[]> {
+    const input = applyRolePrefix(text, role);
     if (useLegacyEmbeddingsOnly) {
-      return embedViaApiEmbeddingsOne(text);
+      return embedViaApiEmbeddingsOne(input);
     }
     try {
-      const rows = await embedViaApiEmbed([text]);
+      const rows = await embedViaApiEmbed([input]);
       return rows[0]!;
     } catch (e) {
       if (e instanceof Error && e.message === "OLLAMA_API_EMBED_404") {
-        return embedViaApiEmbeddingsOne(text);
+        return embedViaApiEmbeddingsOne(input);
       }
       throw e;
     }
   }
 
-  async function embed(texts: string[]): Promise<number[][]> {
+  async function embed(texts: string[], role?: EmbedRole): Promise<number[][]> {
     if (texts.length === 0) return [];
+    const inputs = role ? texts.map((t) => applyRolePrefix(t, role)) : texts;
     if (useLegacyEmbeddingsOnly) {
-      return embedLegacy(texts);
+      return embedLegacy(inputs);
     }
     const out: number[][] = [];
     try {
-      for (let i = 0; i < texts.length; i += batchSize) {
-        const batch = texts.slice(i, i + batchSize);
+      for (let i = 0; i < inputs.length; i += batchSize) {
+        const batch = inputs.slice(i, i + batchSize);
         const rows = await embedViaApiEmbed(batch);
         if (rows.length !== batch.length) {
           throw new Error(
@@ -135,7 +153,7 @@ export async function createOllamaEmbedder(
       return out;
     } catch (e) {
       if (e instanceof Error && e.message === "OLLAMA_API_EMBED_404") {
-        return embedLegacy(texts);
+        return embedLegacy(inputs);
       }
       throw e;
     }

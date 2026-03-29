@@ -8,6 +8,7 @@ export interface IngestCliOptions {
   chunkSize?: string;
   overlap?: string;
   recursive?: boolean;
+  stripMargins?: boolean;
 }
 
 export async function ingestCommand(dir: string, options: IngestCliOptions): Promise<void> {
@@ -17,6 +18,7 @@ export async function ingestCommand(dir: string, options: IngestCliOptions): Pro
   if (options.chunkSize !== undefined) overrides.chunkSize = Number(options.chunkSize);
   if (options.overlap !== undefined) overrides.chunkOverlap = Number(options.overlap);
   if (options.recursive === false) overrides.recursive = false;
+  if (options.stripMargins === false) overrides.stripMargins = false;
 
   const config = defaultConfig(overrides);
   const deps = await createAppDeps(cwd, config);
@@ -24,8 +26,12 @@ export async function ingestCommand(dir: string, options: IngestCliOptions): Pro
 
   const result = await runIngest(dir, cwd, deps, hooks);
 
+  const skippedNote =
+    result.filesSkipped && result.filesSkipped > 0
+      ? ` (${result.filesSkipped} unchanged, skipped)`
+      : "";
   console.log(
-    `Indexed ${result.chunksIndexed} chunks from ${result.filesProcessed} files (${result.pagesProcessed} pages).`
+    `Indexed ${result.chunksIndexed} chunks from ${result.filesProcessed} files (${result.pagesProcessed} pages)${skippedNote}.`
   );
   console.log(`Store: ${result.storePath}`);
 }

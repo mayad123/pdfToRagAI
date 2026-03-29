@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>pdf-to-rag · web demo</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+        line-height: 1.45;
+        max-width: 52rem;
+        margin: 0 auto;
+        padding: 1rem 1.25rem 2rem;
+        color: #0f172a;
+      }
+      h1 {
+        font-size: 1.35rem;
+      }
+      label {
+        display: block;
+        margin-top: 0.85rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      input,
+      textarea,
+      button {
+        font: inherit;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 3.5rem;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #475569;
+        margin: 0.25rem 0 0;
+      }
+      pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 0.85rem;
+        overflow: auto;
+        font-size: 0.8rem;
+        border-radius: 6px;
+      }
+      .hit {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin: 0.6rem 0;
+        background: #f8fafc;
+      }
+      .hit-meta {
+        font-size: 0.85rem;
+        color: #334155;
+        margin-bottom: 0.35rem;
+      }
+      mark {
+        background: #fef08a;
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+      }
+      .row button {
+        width: auto;
+      }
+      .err {
+        color: #b91c1c;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>pdf-to-rag · browser demo (MCP HTTP)</h1>
+    <p>
+      Served by <code>pdf-to-rag-mcp-http</code>. The page loads the official MCP TypeScript client from
+      <strong>esm.sh</strong> (needs network on first use) and calls tools on <code>/mcp</code> (same origin — no CORS
+      issues). Use <strong>paths on the server machine</strong> that satisfy your
+      <code>PDF_TO_RAG_ALLOWED_DIRS</code> / <code>PDF_TO_RAG_CWD</code> policy.
+    </p>
+
+    <label for="storeDir">Index directory (<code>storeDir</code>, relative to cwd)</label>
+    <input id="storeDir" type="text" value=".pdf-to-rag-web" autocomplete="off" />
+    <p class="hint">Default matches a dedicated folder under the server process working directory.</p>
+
+    <label for="corpus">Corpus directory (absolute or relative to <code>PDF_TO_RAG_CWD</code>)</label>
+    <input id="corpus" type="text" placeholder="/absolute/path/to/pdfs or examples" autocomplete="off" />
+
+    <div class="row">
+      <button type="button" id="btnIngest">Ingest</button>
+      <button type="button" id="btnInspect">Inspect</button>
+    </div>
+
+    <label for="question">Question</label>
+    <textarea id="question" placeholder="Natural-language question…"></textarea>
+
+    <label for="topK">topK</label>
+    <input id="topK" type="number" min="1" max="50" value="5" style="max-width: 6rem" />
+
+    <label for="hyde">HyDE — hypothetical answer (optional; embedded instead of question)</label>
+    <textarea id="hyde" placeholder="Leave empty to embed the question only"></textarea>
+
+    <label><input id="mmr" type="checkbox" /> MMR diversity</label>
+
+    <div class="row">
+      <button type="button" id="btnQuery">Query</button>
+    </div>
+
+    <p id="banner" class="err" hidden></p>
+
+    <h2>Log</h2>
+    <pre id="log"></pre>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <script type="module">
+      const logEl = document.getElementById("log");
+      const resultsEl = document.getElementById("results");
+      const banner = document.getElementById("banner");
+
+      function log(msg) {
+        logEl.textContent += msg + "\n";
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function showBanner(text) {
+        if (!text) {
+          banner.hidden = true;
+          banner.textContent = "";
+          return;
+        }
+        banner.hidden = false;
+        banner.textContent = text;
+      }
+
+      let client = null;
+
+      async function ensureClient() {
+        if (client) return client;
+        showBanner("");
+        log("Loading MCP SDK…");
+        let Client;
+        let StreamableHTTPClientTransport;
+        try {
+          ({ Client } = await import("https://esm.sh/@modelcontextprotocol/sdk@1.28.0/client/index.js"));
+          ({ StreamableHTTPClientTransport } = await import(
+            "https://esm.sh/@modelcontextprotocol/sdk@1.28.0/client/streamableHttp.js"
+          ));
+        } catch (e) {
+          const msg =
+            "Could not load @modelcontextprotocol/sdk from esm.sh (offline or blocked?). Use the CLI or stdio MCP instead.";
+          showBanner(msg);
+          log(String(e));
+          throw new Error(msg);
+        }
+        const c = new Client({ name: "pdf-to-rag-web-demo", version: "1" }, { capabilities: {} });
+        const transport = new StreamableHTTPClientTransport(new URL("/mcp", window.location.origin));
+        await c.connect(transport);
+        client = c;
+        log("MCP session initialized.");
+        return c;
+      }
+
+      function payloadFromResult(result) {
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        const text = result.content?.find((c) => c.type === "text")?.text;
+        if (text) {
+          try {
+            return JSON.parse(text);
+          } catch {
+            return null;
+          }
+        }
+        return null;
+      }
+
+      document.getElementById("btnIngest").addEventListener("click", async () => {
+        showBanner("");
+        resultsEl.innerHTML = "";
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          const path = document.getElementById("corpus").value.trim();
+          const args = { storeDir };
+          if (path) args.path = path;
+          log("ingest " + JSON.stringify(args));
+          const result = await c.callTool({ name: "ingest", arguments: args });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) {
+            showBanner(payload?.error?.message || "ingest failed");
+          }
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+
+      document.getElementById("btnInspect").addEventListener("click", async () => {
+        showBanner("");
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          log("inspect storeDir=" + storeDir);
+          const result = await c.callTool({ name: "inspect", arguments: { storeDir } });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) showBanner(payload?.error?.message || "inspect failed");
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+
+      document.getElementById("btnQuery").addEventListener("click", async () => {
+        showBanner("");
+        resultsEl.innerHTML = "";
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          const question = document.getElementById("question").value.trim();
+          if (!question) {
+            showBanner("Enter a question.");
+            return;
+          }
+          const topK = Number(document.getElementById("topK").value) || 5;
+          const hyde = document.getElementById("hyde").value.trim();
+          const mmr = document.getElementById("mmr").checked;
+          /** @type {Record<string, unknown>} */
+          const args = { question, storeDir, topK };
+          if (hyde) args.hypotheticalAnswer = hyde;
+          if (mmr) args.mmr = true;
+          log("query " + JSON.stringify({ ...args, question: question.slice(0, 80) + (question.length > 80 ? "…" : "") }));
+          const result = await c.callTool({ name: "query", arguments: args });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) {
+            showBanner(payload?.error?.message || "query failed");
+            return;
+          }
+          const hits = payload.data?.hits ?? [];
+          if (!hits.length) {
+            resultsEl.textContent = "No hits (empty index or below min score).";
+            return;
+          }
+          for (let i = 0; i < hits.length; i++) {
+            const h = hits[i];
+            const div = document.createElement("div");
+            div.className = "hit";
+            const meta = document.createElement("div");
+            meta.className = "hit-meta";
+            meta.textContent = `#${i + 1} · ${h.fileName} · page ${h.page} · score=${typeof h.score === "number" ? h.score.toFixed(4) : h.score}`;
+            const body = document.createElement("div");
+            const excerpt = (h.text || "").slice(0, 1200);
+            body.textContent = excerpt;
+            div.appendChild(meta);
+            div.appendChild(body);
+            resultsEl.appendChild(div);
+          }
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+    </script>
+  </body>
+</html>

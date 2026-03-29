@@ -5,6 +5,7 @@ export type ToolErrorCode =
   | "INVALID_INPUT"
   | "INGEST_FAILED"
   | "QUERY_FAILED"
+  | "SEARCH_FAILED"
   | "INSPECT_FAILED"
   | "INTERNAL";
 

@@ -21,7 +21,7 @@ description: >-
 ## Docs and config to align
 
 - `README.md`
-- `docs/README.md`, `docs/onboarding/mcp.md`, `docs/use/mcp.md`, `docs/use/cli-library.md`, `docs/architecture/overview.md`, `docs/management/roadmap.md` (milestones if reality changed)
+- `docs/README.md`, `docs/onboarding/mcp.md`, `docs/use/mcp.md`, `docs/use/cli-library.md`, `docs/architecture/overview.md`, `docs/management/roadmap.md`, `docs/management/project.md` (milestones / methodology narrative if reality changed)
 - `docs/management/requirements.md` (if behavior vs F/N/D IDs changed)
 - `docs/contributing/agents.md` (roles ↔ commands, agents, skills)
 - `.cursor/rules/pdf-to-rag.mdc` (if layers or scripts changed materially)
@@ -30,7 +30,7 @@ description: >-
 
 - Focus on `README.md`, `docs/*`, `.cursor/commands/`, `.cursor/agents/`, examples in `docs/use/mcp.md`.
 - Verify CLI/MCP claims against `src/cli.ts`, `src/commands/`, `src/mcp/server.ts`.
-- Keep `package.json` `scripts` / `bin` listings in docs accurate (`build`, `dev`, `mcp:smoke`, `examples:smoke`).
+- Keep `package.json` `scripts` / `bin` listings in docs accurate (`build`, `dev`, `mcp:smoke`, `examples:smoke`, `examples:fixtures`, `eval:generate`, `eval:run`, `eval:compare`).
 - Prefer copy-pasteable snippets (absolute-path placeholders for MCP where needed).
 - If only tone is requested, keep structure/tables unless factually wrong.
 

@@ -65,7 +65,7 @@ flowchart TB
 - **`src/mcp/`** — stdio MCP server, Zod-shaped tool I/O, path policy (`paths.ts`), result envelope (`tool-results.ts`); calls the same `run*` functions.
 - **`src/application/`** — Orchestration, `AppDeps`, hooks around ingest/query.
 - **`src/domain/`** — Types only (documents, chunks, results); no I/O.
-- **`src/ingestion/pipeline.ts`** — Core ingest stages: PDF → text → chunks → embed → `VectorStore.replaceAll`.
+- **`src/ingestion/pipeline.ts`** — Core ingest stages: PDF → text → cross-page chunks → embed → `VectorStore.replaceForFiles` (incremental by source file; **F13** fingerprints).
 
 ## Source tree (by responsibility)
 
@@ -74,19 +74,19 @@ flowchart TB
 | `cli.ts` | CLI entry; registers `ingest`, `query`, `inspect` commands. |
 | `commands/` | `ingest.ts`, `query.ts`, `inspect.ts` — parse args, print results. |
 | `application/` | `createAppDeps`, `runIngest`, `runQuery`, `runInspect`, `deps.ts`, `factory.ts` (selects Transformers vs Ollama from **`PDF_TO_RAG_EMBED_BACKEND`**, merges effective `embeddingModel` into config for Ollama). |
-| `mcp/` | `server.ts`, `paths.ts`, `tool-results.ts`, `version.ts`. |
+| `mcp/` | `server.ts` (stdio), `server-http.ts` (HTTP/SSE, `pdf-to-rag-mcp-http`), `paths.ts`, `tool-results.ts`, `version.ts`. |
 | `config/` | Defaults and `PdfToRagConfig` (`defaults.ts`). |
 | `domain/` | `document`, `page`, `chunk`, `metadata`, `results` types. |
 | `hooks/` | `Hooks` and lifecycle payloads for library users. |
 | `pdf/` | `list.ts` (discover PDFs), `extract.ts` (page text via pdfjs). |
 | `normalization/` | `clean.ts` — page text cleanup before chunking. |
-| `chunking/` | `chunk.ts` — overlapping character windows + `attachMetadata`. |
+| `chunking/` | `document.ts` — cross-page chunking; `chunk.ts` — overlapping windows + `attachMetadata`. |
 | `metadata/` | `attach.ts` — deterministic chunk ids and file/page metadata. |
 | `ingestion/` | `pipeline.ts` — `runIngestPipeline`; `index.ts` re-exports. |
 | `embeddings.ts` | Public barrel: `createEmbedder` (Transformers default), `createTransformersEmbedder`, `createOllamaEmbedder`, `Embedder` type. |
 | `embedding/` | Implementations: `transformers.ts` (Transformers.js), `ollama.ts` (HTTP `/api/embed` batch + `/api/embeddings` fallback, L2-normalized vectors). |
-| `storage/` | `FileVectorStore`, JSON index on disk, linear search; **`search`** validates query vs stored embedding dimension. |
-| `query/` | `search.ts` — `normalizeQueryText`, `searchQuery` (load index, normalize NL question, embed, cosine top-k over chunks). |
+| `storage/` | `FileVectorStore`, JSON index on disk (`index.json` v3, no embeddings) + binary sidecar (`index.bin`, raw `Float32Array`); HNSW index (`index.hnsw`) built above `PDF_TO_RAG_HNSW_THRESHOLD`; **`search`** validates query vs stored embedding dimension. |
+| `query/` | `search.ts` — `normalizeQueryText`, `searchQuery` (load index, embed with `"query"` role or HyDE `"passage"` role, cosine/HNSW top-k; optional **MMR** via `mmr.ts`; optional cross-encoder **reranking** via `rerank.ts` when `PDF_TO_RAG_RERANK_MODEL` is set). |
 
 ```mermaid
 flowchart LR
@@ -98,8 +98,7 @@ flowchart LR
   end
   subgraph text [Text]
     CL[clean.ts]
-    CH[chunk.ts]
-    AT[attach.ts]
+    DOC[document.ts]
   end
   subgraph index [Index]
     P[pipeline.ts]
@@ -108,9 +107,8 @@ flowchart LR
   end
   L --> P
   E --> CL
-  CL --> CH
-  CH --> AT
-  AT --> P
+  CL --> DOC
+  DOC --> P
   P --> EM
   P --> FS
 ```
@@ -125,15 +123,15 @@ sequenceDiagram
   participant P as runIngestPipeline
   participant X as extractPages clean chunk
   participant M as embedder.embed
-  participant V as VectorStore.replaceAll
+  participant V as VectorStore.replaceForFiles
   S->>R: rootPath cwd deps hooks
   R->>L: list PDFs under root
   R->>P: docs config embedder store
-  loop each document and page
-    P->>X: extract clean chunkPageText
+  loop each changed document
+    P->>X: extract clean chunkDocumentText
   end
-  P->>M: batch texts
-  P->>V: indexed chunks
+  P->>M: batch embed passages
+  P->>V: chunks for changed files + fingerprints
   R->>R: hooks afterChunking afterIndexing
   R-->>S: IngestResult
 ```
@@ -147,12 +145,19 @@ sequenceDiagram
   participant Q as searchQuery
   participant V as VectorStore
   participant M as embedder.embedOne
-  S->>R: question deps hooks
-  R->>Q: question config embedder store
+  participant RE as rerank.ts optional
+  S->>R: question deps hooks hypotheticalAnswer
+  R->>Q: question config embedder store hypotheticalAnswer
   Q->>V: load
-  Q->>M: normalized NL question
-  Q->>V: search vector topK
-  V-->>Q: hits
+  Q->>M: embedOne (query role; or passage role for HyDE)
+  Q->>V: search vector topK cosine or HNSW
+  V-->>Q: candidates
+  alt reranking enabled PDF_TO_RAG_RERANK_MODEL
+    Q->>RE: rerankCandidates cross-encoder scores
+    RE-->>Q: reranked hits
+  else MMR enabled
+    Q->>Q: mmrSelect diversity reranking
+  end
   Q-->>R: QueryHit list
   R-->>S: citations fileName page text
 ```

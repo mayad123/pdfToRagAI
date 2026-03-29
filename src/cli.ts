@@ -29,22 +29,30 @@ program
 
 program
   .command("ingest")
-  .description("Index all PDFs under a directory (full reindex)")
+  .description("Index PDFs under a directory (unchanged files skipped via mtime+size)")
   .argument("<dir>", "folder containing PDFs")
   .option("--store-dir <path>", "directory for the index", ".pdf-to-rag")
   .option("--chunk-size <n>", "max chunk length in characters")
   .option("--overlap <n>", "chunk overlap in characters")
   .option("--no-recursive", "only scan the top-level directory")
+  .option("--no-strip-margins", "keep header and footer text (disabled by default)")
   .action(
     async (
       dir: string,
-      opts: { storeDir: string; chunkSize?: string; overlap?: string; noRecursive?: boolean }
+      opts: {
+        storeDir: string;
+        chunkSize?: string;
+        overlap?: string;
+        noRecursive?: boolean;
+        stripMargins?: boolean;
+      }
     ) => {
       await ingestCommand(dir, {
         storeDir: opts.storeDir,
         chunkSize: opts.chunkSize,
         overlap: opts.overlap,
         recursive: opts.noRecursive ? false : true,
+        stripMargins: opts.stripMargins === false ? false : undefined,
       });
     }
   );

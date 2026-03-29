@@ -12,7 +12,7 @@ Repository: **pdf-to-rag** only. Obey passive rules in `.cursor/rules/pdf-to-rag
 
 ## Before proposing a plan
 
-1. Read `docs/management/roadmap.md` and `docs/management/requirements.md`.
+1. Read `docs/management/project.md` (summary), `docs/management/roadmap.md`, and `docs/management/requirements.md`.
 2. Note Phase 3 items (incremental reindex, SSE) are **deferred** unless the user explicitly wants them.
 
 ## Outputs

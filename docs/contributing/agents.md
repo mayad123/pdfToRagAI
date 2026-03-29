@@ -35,7 +35,7 @@ flowchart TB
   IDX --> USE[use/]
   IDX --> ONB[onboarding/]
   IDX --> CON[contributing/]
-  MGT --> RQ[requirements roadmap]
+  MGT --> RQ[requirements roadmap project]
   ARC --> OV[overview mermaid]
   USE --> MCP[mcp cli-library]
   ONB --> OM[MCP first run]

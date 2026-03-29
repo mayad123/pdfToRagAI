@@ -19,7 +19,7 @@ export async function runIngest(
     filePaths: docs.map((d) => d.absolutePath),
   });
 
-  const { chunks, indexed, pagesProcessed } = await runIngestPipeline(
+  const { chunks, indexed, pagesProcessed, filesSkipped } = await runIngestPipeline(
     docs,
     deps.config,
     deps.embedder,
@@ -32,7 +32,8 @@ export async function runIngest(
   const storePath = join(resolve(cwd), deps.config.storeDir, deps.config.indexFileName);
 
   return {
-    filesProcessed: docs.length,
+    filesProcessed: docs.length - filesSkipped,
+    filesSkipped,
     pagesProcessed,
     chunksIndexed: indexed,
     storePath,

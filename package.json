@@ -2,6 +2,10 @@
   "name": "pdf-to-rag",
   "version": "0.1.0",
   "description": "Turn PDFs into a queryable local knowledge base (CLI, library, MCP server)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mayadevarajan/pdfToRag.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,20 +17,29 @@
   },
   "bin": {
     "pdf-to-rag": "./dist/cli.js",
-    "pdf-to-rag-mcp": "./dist/mcp/server.js"
+    "pdf-to-rag-mcp": "./dist/mcp/server.js",
+    "pdf-to-rag-mcp-http": "./dist/mcp/server-http.js"
   },
   "files": [
     "dist",
+    "LICENSE",
     "README.md",
-    "docs"
+    "docs",
+    "public"
   ],
   "scripts": {
     "build": "tsc",
     "hooks:install": "git config core.hooksPath .hooks",
     "dev": "tsx src/cli.ts",
     "mcp:smoke": "node scripts/mcp-smoke.mjs",
+    "mcp:http": "node dist/mcp/server-http.js",
     "examples:smoke": "node scripts/examples-smoke.mjs",
     "examples:fixtures": "node scripts/examples-query-fixtures.mjs",
+    "demo:papers": "node examples/demo-papers.mjs",
+    "eval:generate": "node scripts/eval-generate.mjs",
+    "eval:run": "node scripts/eval-run.mjs",
+    "eval:compare": "node scripts/eval-compare.mjs",
+    "test": "node --test test/cosine.test.mjs test/file-store.test.mjs test/search.test.mjs test/hyde.test.mjs test/rerank.test.mjs test/binary-store.test.mjs test/hnsw.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "engines": {
@@ -45,6 +58,7 @@
     "@modelcontextprotocol/sdk": "^1.28.0",
     "@xenova/transformers": "^2.17.2",
     "commander": "^12.1.0",
+    "hnswlib-node": "^3.0.0",
     "pdfjs-dist": "^4.10.38",
     "zod": "^4.3.6"
   },

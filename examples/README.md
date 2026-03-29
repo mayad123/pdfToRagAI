@@ -12,40 +12,32 @@ npm run examples:smoke
 
 ## JSON fixtures (NL queries and expected quotations)
 
-Canonical file: **`examples/query-fixtures.json`**. Define **natural-language questions** and **verbatim substring** expectations, then run:
+You can define **natural-language questions** and **verbatim substring** expectations (direct quotations that must appear in retrieved chunk text) in a JSON file, then run:
 
 ```bash
 npm run build
+cp examples/query-fixtures.sample.json examples/query-fixtures.json
+# edit query-fixtures.json, then:
 npm run examples:fixtures
-# optional path or verbose:
-npm run examples:fixtures -- ./examples/query-fixtures.json --verbose
+# or: npm run examples:fixtures -- /absolute/or/relative/path/to/fixtures.json
 ```
 
-**Ranking vs `defaults.topK`:** The runner ingests your corpus, embeds each case’s question, **ranks every chunk** by cosine similarity, and builds a hit list of length **chunk count**. Assertions (`textContains`, `minHits`, …) use that **full ranked list**. The **`topK`** field in JSON still configures `PdfToRagConfig` (e.g. for consistency with other tooling); it does **not** truncate which chunks are checked for substrings. CLI/MCP **`query`** with the same config still returns only **`topK`** hits—fixtures are intentionally stricter on corpus coverage.
-
-**Corpus**
-
-| Field | Meaning |
-|--------|--------|
-| `mode` | **`smallest`** (default): one smallest PDF. **`all`**: every `.pdf` in `sourceDir`. |
-| `sourceDir` | Relative to repo root (default `examples`). |
-| `pinnedFiles` | Optional: only these PDF **basenames** are ingested (subset of `sourceDir`). |
+**Behavior:** The script ingests the corpus (`corpus.mode`: **`smallest`** = one smallest PDF, **`all`** = every PDF in `corpus.sourceDir`), then for each **`cases[]`** entry runs semantic **`runQuery`** and checks **`expect`** against the returned **`QueryHit[]`** (same data the CLI/MCP surfaces as quoted passages).
 
 **`expect` fields (all optional; combined with AND):**
 
 | Field | Meaning |
 |--------|--------|
-| `minHits` / `maxHits` | Length of the hit list (after ingest, this is typically **all chunks**). |
-| `minDistinctFiles` | At least this many unique `fileName` values among hits. |
-| `textContains` | Each string appears in **some** chunk text in the **ranked** full list (substring). |
-| `textContainsInCorpus` | Each string appears in **some** indexed chunk (same as scanning raw index text; use for ingest-only checks). |
-| `textContainsAllInOneHit` | All strings appear in the **same** chunk’s `text`. |
-| `relaxApostrophes` | **`false`** disables apostrophe normalization. **Default in the runner is on** (`'` vs `’` etc.) unless you set **`false`**. |
-| `fileName` / `fileNameIncludes` / `page` | Match metadata on hits. |
+| `minHits` / `maxHits` | Length of the hit list after retrieval. |
+| `textContains` | Each string must appear in **some** hit’s `text` (verbatim substring). |
+| `textContainsAllInOneHit` | All strings must appear in the **same** hit’s `text` (one chunk). |
+| `fileName` | Some hit must have this exact `fileName`. |
+| `fileNameIncludes` | Some hit’s `fileName` must include this substring. |
+| `page` | Either a positive integer (exact page) or `{ "gte": n, "lte": m }`. |
 
-Per-case optional: **`topK`** (config override only). **`caseInsensitive`** on the case or in **`expect`**.
+Per-case optional: **`topK`** (override), **`caseInsensitive`: true** (substring checks only).
 
-Assertions are **substring-based**. A case fails if the quoted text is missing from the PDFs you ingested or the embedding backend differs from what you expect (**F7**).
+`examples/query-fixtures.json` is gitignored so you can keep local expectations; commit **`query-fixtures.sample.json`** as a template. Assertions are **substring-based** so small PDF text or chunk-boundary shifts still pass when the quoted phrase still appears in a top hit. If you change **embedding model or backend**, re-run and adjust substrings if ranking changes.
 
 ## Full-folder ingest (heavy)
 
@@ -63,8 +55,23 @@ node dist/cli.js ingest ./examples
 
 With Ollama using **GPU or Apple Metal**, full ingest of an `examples/`-scale corpus is a **design target** of **~5 minutes** wall time (not guaranteed on CPU-only Ollama). Tune batch size and concurrency if needed.
 
+For corpora that exceed 2000 chunks, the index automatically builds an HNSW approximate nearest-neighbor index (`index.hnsw`) on ingest, and query switches to HNSW search. The threshold is configurable via `PDF_TO_RAG_HNSW_THRESHOLD`.
+
 **Re-ingest** after switching embedding backend or model so the index `embeddingModel` id matches the embedder (see [requirements § F7](../docs/management/requirements.md#functional-traceability)).
 
 ## Benchmarking
 
 To record timings for your machine, use e.g. `time node dist/cli.js ingest ./examples` with your chosen env. You can note hardware class (CPU, GPU/Metal, Ollama version) alongside results when sharing benchmarks.
+
+Maintainer-recorded tables (methodology + **HNSW vs linear** query latency on a fixed corpus) live in [docs/analysis/benchmarks.md](../docs/analysis/benchmarks.md) (**D7** / **N3**).
+
+## Scripted demo (research-style questions)
+
+**Phase 7 (D9):** `examples/demo-papers.mjs` ingests the **smallest** PDF in this folder into a **temporary** store, runs **four** general research-style questions, and prints **formatted citations** (file, page, score, excerpt).
+
+```bash
+npm run build
+npm run demo:papers
+```
+
+Requires at least one `.pdf` in `examples/`. Uses the same embedding backend as your environment (`PDF_TO_RAG_EMBED_BACKEND` / Ollama vars when set).

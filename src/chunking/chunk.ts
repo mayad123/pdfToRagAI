@@ -24,7 +24,13 @@ export function chunkPageText(
   let chunkIndex = 0;
 
   while (start < cleanedText.length) {
-    const end = Math.min(start + chunkSize, cleanedText.length);
+    const rawEnd = Math.min(start + chunkSize, cleanedText.length);
+    // Snap to a word boundary so chunks don't split mid-word.
+    let end = rawEnd;
+    if (rawEnd < cleanedText.length) {
+      const lastSpace = cleanedText.lastIndexOf(" ", rawEnd);
+      if (lastSpace > start) end = lastSpace;
+    }
     const text = cleanedText.slice(start, end).trim();
     if (text.length > 0) {
       const base = {
@@ -35,9 +41,9 @@ export function chunkPageText(
       chunks.push(base);
       chunkIndex += 1;
     }
-    if (end >= cleanedText.length) break;
-    let next = end - overlap;
-    if (next <= start) next = end;
+    if (rawEnd >= cleanedText.length) break;
+    let next = rawEnd - overlap;
+    if (next <= start) next = rawEnd;
     start = next;
   }
 

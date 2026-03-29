@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "generated": "2026-03-29T00:00:00.000Z",
+  "generationModel": "manual-curator-phase7",
+  "embeddingModel": "Xenova/all-mpnet-base-v2",
+  "items": [
+    {
+      "chunkId": "db8ad646238f20d1c5787e33e60e9715",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 1,
+      "textPreview": "COMPUTATIONAL NEUROSCIENCE… mathematical and computational biology",
+      "question": "What does the series aim to encourage by publishing textbooks and handbooks in mathematical and computational biology?"
+    },
+    {
+      "chunkId": "6f96730e7ee5de08249f6a7cc416e44f",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 273,
+      "textPreview": "stochastic properties neural spike train conditional intensity",
+      "question": "What function is used to derive the joint probability for stochastic properties of a neural spike train?"
+    },
+    {
+      "chunkId": "c7b37ceea8e0791a35fd7048d916cfdd",
+      "sourceFile": "Computational.Neuroscience-A.Comprehensive.Approach.pdf",
+      "page": 531,
+      "textPreview": "match enhancement IT neurons sample stimulus",
+      "question": "What effect is produced in IT neurons with sample stimulus-related selectivity?"
+    },
+    {
+      "chunkId": "805e1cac9df95a2ceebc8d65ebec5055",
+      "sourceFile": "Neuroscience_-_Purves_etal._Neuroscience_6e.pdf",
+      "page": 39,
+      "textPreview": "cytokines defence molecules",
+      "question": "What are cytokines described as in the context of defence molecules?"
+    }
+  ]
+}
