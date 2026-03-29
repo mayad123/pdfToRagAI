@@ -1,6 +1,6 @@
 # pdf-to-rag
 
-[![CI](https://img.shields.io/github/actions/workflow/status/mayadevarajan/pdfToRag/ci.yml?branch=main&label=CI)](https://github.com/mayadevarajan/pdfToRag/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/mayad123/pdfToRagAI/ci.yml?branch=main&label=CI)](https://github.com/mayad123/pdfToRagAI/actions/workflows/ci.yml)
 · [Ecosystem comparison](docs/use/comparison.md)
 
 **Try it:** `npx pdf-to-rag ingest ./path/to/pdfs` then `npx pdf-to-rag query "Your natural-language question"` (requires [Node.js 18+](https://nodejs.org/); first run may download the default embedding model).
