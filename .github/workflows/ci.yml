@@ -49,12 +49,19 @@ jobs:
           cache: npm
 
       # node-gyp requires Python. ubuntu-latest and macos runners ship Python 3
-      # by default. On Windows the setup-node action does not guarantee it, so
-      # we set the npm config to use the Python bundled with the runner.
-      - name: Configure Python for node-gyp (Windows)
+      # by default. npm v9+ no longer allows `npm config set python` (invalid
+      # option); use npm_config_python instead. Pin Python on Windows so
+      # `npm ci` can compile hnswlib-node reliably.
+      - name: Set up Python for node-gyp (Windows)
         if: runner.os == 'Windows'
-        run: npm config set python python3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Export npm_config_python (Windows)
+        if: runner.os == 'Windows'
         shell: bash
+        run: echo "npm_config_python=python" >> "$GITHUB_ENV"
 
       # Install deps — triggers node-gyp rebuild for hnswlib-node (gypfile:true).
       # On Linux the runner ships build-essential + python3.
