@@ -13,7 +13,7 @@ Repository: **pdf-to-rag** only. Obey passive rules in `.cursor/rules/pdf-to-rag
 ## Before proposing a plan
 
 1. Read `docs/management/project.md` (summary), `docs/management/roadmap.md`, and `docs/management/requirements.md`.
-2. Note Phase 3 items (incremental reindex, SSE) are **deferred** unless the user explicitly wants them.
+2. Treat **phase and shipped status as authoritative in `roadmap.md` / `requirements.md`**—do not assume features are “deferred” without checking (e.g. HTTP/SSE MCP and multi-page `public/` web UI are **shipped** surfaces).
 
 ## Outputs
 

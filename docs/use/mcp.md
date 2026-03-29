@@ -229,9 +229,19 @@ npm run mcp:http
 
 ### Web demo UI (F19)
 
-After `npm run build`, **`GET /`** and **`GET /index.html`** serve [public/index.html](../../public/index.html) from the repo (also included in the npm tarball under `public/`). Open **http://127.0.0.1:3000/** while **`pdf-to-rag-mcp-http`** is running.
+After `npm run build`, **`GET`** serves HTML, CSS, and other static files from [public/](../../public/) (also included in the npm tarball under `public/`). Open **http://127.0.0.1:3000/** while **`pdf-to-rag-mcp-http`** is running.
 
-- The page loads **`@modelcontextprotocol/sdk`** from **esm.sh** in the browser (network required on first load) and connects to **`/mcp`** on the same origin.
+| URL | Purpose |
+|-----|---------|
+| **`/`** or **`/index.html`** | Use-focused home (what it does, CTAs) |
+| **`/setup.html`** | Install and run instructions; copyable commands and optional Cursor `mcp.json` |
+| **`/about.html`** | Surfaces (CLI, library, MCP), local-first notes, links |
+| **`/demo.html`** | Interactive demo: ingest, query, inspect via MCP in the browser |
+| **`/styles.css`** | Shared stylesheet for the pages above |
+
+Unknown paths under `public/` return **404**; traversal (e.g. `..`) is rejected.
+
+- The **Try demo** page loads **`@modelcontextprotocol/sdk`** from **esm.sh** in the browser (network required on first load) and connects to **`/mcp`** on the same origin.
 - Enter a **corpus directory** and **storeDir** that resolve under your allowlist, run **Ingest**, then **Query**. Results show **file, page, score**, and excerpt text.
 - **Stateful mode:** If you set `PDF_TO_RAG_HTTP_STATEFUL=1`, use an MCP client that preserves **`Mcp-Session-Id`**; the vanilla demo targets the default **stateless** server.
 
@@ -240,7 +250,7 @@ One-command local try (from repo root, with PDFs under `examples/`):
 ```bash
 npm run build
 PDF_TO_RAG_CWD="$PWD" PDF_TO_RAG_ALLOWED_DIRS="$PWD/examples,$PWD" npm run mcp:http
-# Browser: http://127.0.0.1:3000/  → corpus: examples  → Ingest → Query
+# Browser: http://127.0.0.1:3000/demo.html  → corpus: examples  → Ingest → Query
 ```
 
 ## Version

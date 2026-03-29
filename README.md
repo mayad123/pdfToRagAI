@@ -54,7 +54,7 @@ Common flags: `--store-dir` (index directory, default `.pdf-to-rag`), `ingest` `
 - **JSON NL + quotation checks:** `npm run examples:fixtures` (see [examples/README.md](examples/README.md))
 - **MCP install:** `npm run mcp:smoke` after `npm run build`
 
-Optional git hooks: `npm run hooks:install` — see [.hooks/README.md](.hooks/README.md).
+Optional git hooks: `npm run hooks:install` — pre-commit runs **`npm run build`** and **`npm test`** (see [.hooks/README.md](.hooks/README.md)).
 
 </details>
 
@@ -167,6 +167,8 @@ Full file-level map: <a href="docs/architecture/overview.md">docs/architecture/o
 
 After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <code>pdf-to-rag-mcp-http</code> (HTTP/SSE on port 3000) for hosts that cannot use stdio. Configure corpus access with <code>PDF_TO_RAG_CWD</code>, <code>PDF_TO_RAG_ALLOWED_DIRS</code>, and optionally <code>PDF_TO_RAG_SOURCE_DIR</code>. The <code>query</code> tool accepts an optional <code>hypotheticalAnswer</code> (HyDE) — pass a caller-generated hypothetical answer to improve retrieval for short or abstract questions. Enable cross-encoder reranking by setting <code>PDF_TO_RAG_RERANK_MODEL</code> to a Hugging Face cross-encoder id. Start here: <a href="docs/onboarding/mcp.md">docs/onboarding/mcp.md</a>; full reference: <a href="docs/use/mcp.md">docs/use/mcp.md</a>.
 
+<strong>Browser UI (HTTP server):</strong> <code>npm run mcp:http</code> serves multi-page static content from <code>public/</code>—home (<code>/</code>), setup (<code>/setup.html</code>), about (<code>/about.html</code>), and an interactive demo (<code>/demo.html</code>) that talks to <code>/mcp</code> on the same origin. See <a href="docs/use/mcp.md#web-demo-ui-f19">docs/use/mcp.md § Web demo UI</a>.
+
 <strong>Cursor:</strong> rules in <a href=".cursor/rules/">.cursor/rules/</a>, skills in <a href=".cursor/skills/">.cursor/skills/</a> (<code>pdf-rag-*</code>), commands in <a href=".cursor/commands/">.cursor/commands/</a>.
 
 </details>
@@ -235,6 +237,7 @@ See <a href="docs/management/requirements.md">docs/management/requirements.md</a
 - PDFs (or your own) under <a href="examples/">examples/</a> — <a href="examples/README.md">examples/README.md</a>
 - <code>npm run examples:smoke</code> — minimal ingest + query
 - <code>npm run examples:fixtures</code> — <code>examples/query-fixtures.json</code> NL + substring suite
+- <code>npm run demo:papers</code> — longer scripted demo (see <a href="examples/README.md">examples/README.md</a>)
 - <code>npm run eval:generate</code> / <code>eval:run</code> / <code>eval:compare</code> — synthetic gold-set generation, retrieval metrics, and A/B diff (see <a href="docs/management/project.md#testing-and-evaluation-methodology">docs/management/project.md</a> § Testing and evaluation methodology)
 
 </details>

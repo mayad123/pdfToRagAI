@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Browser demo: MCP ingest, query, and inspect over Streamable HTTP on /mcp."
+    />
+    <title>pdf-to-rag · Try demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="site-logo" href="/">pdf-to-rag</a>
+        <nav class="site-nav" aria-label="Site">
+          <a href="/">Home</a>
+          <a href="/setup.html">Setup</a>
+          <a href="/about.html">About</a>
+          <a href="/demo.html" aria-current="page">Try demo</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <main id="main">
+        <h1 class="demo-page-title">Try demo (MCP over HTTP)</h1>
+        <p class="demo-page-lead">
+          Requires <code>npm run mcp:http</code> running on this machine. The page loads the MCP SDK from
+          <strong>esm.sh</strong> (network on first use) and calls tools on <code>/mcp</code>. Paths must satisfy your
+          server’s <code>PDF_TO_RAG_ALLOWED_DIRS</code> / <code>PDF_TO_RAG_CWD</code> policy.
+        </p>
+
+        <div class="grid">
+          <section class="card" aria-labelledby="mcp-title">
+            <h2 id="mcp-title">MCP from this server</h2>
+            <p class="card-sub">
+              Same tools as Cursor stdio: <strong>ingest</strong>, <strong>query</strong>, <strong>inspect</strong>.
+              Status updates when the browser session connects.
+            </p>
+
+            <div class="mcp-bar">
+              <span id="mcpStatus" role="status">MCP session: not connected</span>
+              <div class="tabs" role="tablist" aria-label="MCP transport">
+                <button type="button" role="tab" id="tab-http" aria-selected="true" aria-controls="panel-http">
+                  HTTP (this tab)
+                </button>
+                <button type="button" role="tab" id="tab-stdio" aria-selected="false" aria-controls="panel-stdio">
+                  Cursor (stdio)
+                </button>
+              </div>
+            </div>
+
+            <div id="panel-http" class="tab-panel active" role="tabpanel" aria-labelledby="tab-http">
+              <p>Commands to start this server from the project root:</p>
+              <div class="copy-block">
+                <button type="button" class="copy-btn" data-copy="cmd-http">Copy</button>
+                <pre id="snippet-http">npm run build
+npm run mcp:http
+# → UI http://127.0.0.1:3000/  ·  MCP http://127.0.0.1:3000/mcp</pre>
+              </div>
+            </div>
+
+            <div id="panel-stdio" class="tab-panel" role="tabpanel" aria-labelledby="tab-stdio" hidden>
+              <p>Example <code>mcp.json</code> snippet (replace paths). See <a href="/setup.html">Setup</a> for steps.</p>
+              <div class="copy-block">
+                <button type="button" class="copy-btn" data-copy="cmd-stdio">Copy</button>
+                <pre id="snippet-stdio">{
+  "mcpServers": {
+    "pdf-to-rag": {
+      "command": "node",
+      "args": ["/absolute/path/to/pdfToRag/dist/mcp/server.js"],
+      "env": {
+        "PDF_TO_RAG_CWD": "/absolute/path/to/pdfToRag",
+        "PDF_TO_RAG_SOURCE_DIR": "/absolute/path/to/pdfToRag/examples",
+        "PDF_TO_RAG_ALLOWED_DIRS": "/absolute/path/to/pdfToRag/examples"
+      }
+    }
+  }
+}</pre>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="demo-title">
+            <h2 id="demo-title">Ingest &amp; query</h2>
+            <p class="card-sub">Connects on first button click.</p>
+
+            <label for="storeDir">Index directory (<code>storeDir</code>)</label>
+            <input id="storeDir" type="text" value=".pdf-to-rag-web" autocomplete="off" />
+            <p class="hint">Relative to the server process working directory.</p>
+
+            <label for="corpus">Corpus directory</label>
+            <input id="corpus" type="text" placeholder="/path/to/pdfs or examples" autocomplete="off" />
+            <p class="hint">Absolute or relative to <code>PDF_TO_RAG_CWD</code>.</p>
+
+            <div class="row">
+              <button type="button" class="primary" id="btnIngest">Ingest</button>
+              <button type="button" class="primary" id="btnInspect">Inspect</button>
+            </div>
+
+            <label for="question">Question</label>
+            <textarea id="question" placeholder="Ask in natural language…"></textarea>
+
+            <label for="topK">topK</label>
+            <input id="topK" type="number" min="1" max="50" value="5" style="max-width: 6rem" />
+
+            <label for="hyde">HyDE — hypothetical answer (optional)</label>
+            <textarea id="hyde" placeholder="Leave empty to embed the question only"></textarea>
+
+            <label><input id="mmr" type="checkbox" /> MMR diversity</label>
+
+            <div class="row">
+              <button type="button" class="primary" id="btnQuery">Query</button>
+            </div>
+
+            <p id="banner" class="err" hidden></p>
+
+            <h3 class="section-title">Log</h3>
+            <pre id="log"></pre>
+
+            <h3 class="section-title">Results</h3>
+            <div id="results"></div>
+          </section>
+        </div>
+
+        <p class="footnote">
+          Recruiters: protocol-shaped tools (MCP), path allowlists, and a thin web client on the same process as
+          <code>/mcp</code>—see repo README for CI and architecture.
+        </p>
+      </main>
+    </div>
+
+    <script type="module">
+      const logEl = document.getElementById("log");
+      const resultsEl = document.getElementById("results");
+      const banner = document.getElementById("banner");
+      const mcpStatusEl = document.getElementById("mcpStatus");
+
+      function setMcpStatus(connected) {
+        if (!mcpStatusEl) return;
+        mcpStatusEl.textContent = connected ? "MCP session: connected" : "MCP session: not connected";
+        mcpStatusEl.classList.toggle("connected", connected);
+      }
+
+      function log(msg) {
+        logEl.textContent += msg + "\n";
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function showBanner(text) {
+        if (!text) {
+          banner.hidden = true;
+          banner.textContent = "";
+          return;
+        }
+        banner.hidden = false;
+        banner.textContent = text;
+      }
+
+      const tabHttp = document.getElementById("tab-http");
+      const tabStdio = document.getElementById("tab-stdio");
+      const panelHttp = document.getElementById("panel-http");
+      const panelStdio = document.getElementById("panel-stdio");
+
+      function selectTab(which) {
+        const isHttp = which === "http";
+        tabHttp.setAttribute("aria-selected", isHttp);
+        tabStdio.setAttribute("aria-selected", !isHttp);
+        panelHttp.classList.toggle("active", isHttp);
+        panelStdio.classList.toggle("active", !isHttp);
+        panelHttp.hidden = !isHttp;
+        panelStdio.hidden = isHttp;
+      }
+
+      tabHttp.addEventListener("click", () => selectTab("http"));
+      tabStdio.addEventListener("click", () => selectTab("stdio"));
+
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-copy");
+          const pre = id === "cmd-http" ? document.getElementById("snippet-http") : document.getElementById("snippet-stdio");
+          const text = pre?.textContent?.trim() ?? "";
+          try {
+            await navigator.clipboard.writeText(text);
+            const prev = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(() => {
+              btn.textContent = prev;
+            }, 1600);
+          } catch {
+            btn.textContent = "Failed";
+            setTimeout(() => {
+              btn.textContent = "Copy";
+            }, 1600);
+          }
+        });
+      });
+
+      let client = null;
+
+      async function ensureClient() {
+        if (client) return client;
+        showBanner("");
+        log("Loading MCP SDK…");
+        let Client;
+        let StreamableHTTPClientTransport;
+        try {
+          ({ Client } = await import("https://esm.sh/@modelcontextprotocol/sdk@1.28.0/client/index.js"));
+          ({ StreamableHTTPClientTransport } = await import(
+            "https://esm.sh/@modelcontextprotocol/sdk@1.28.0/client/streamableHttp.js"
+          ));
+        } catch (e) {
+          const msg =
+            "Could not load @modelcontextprotocol/sdk from esm.sh (offline or blocked?). Use the CLI or stdio MCP instead.";
+          showBanner(msg);
+          log(String(e));
+          setMcpStatus(false);
+          throw new Error(msg);
+        }
+        const c = new Client({ name: "pdf-to-rag-web-demo", version: "1" }, { capabilities: {} });
+        const transport = new StreamableHTTPClientTransport(new URL("/mcp", window.location.origin));
+        await c.connect(transport);
+        client = c;
+        log("MCP session initialized.");
+        setMcpStatus(true);
+        return c;
+      }
+
+      function payloadFromResult(result) {
+        if (result.structuredContent && typeof result.structuredContent === "object") {
+          return result.structuredContent;
+        }
+        const text = result.content?.find((c) => c.type === "text")?.text;
+        if (text) {
+          try {
+            return JSON.parse(text);
+          } catch {
+            return null;
+          }
+        }
+        return null;
+      }
+
+      document.getElementById("btnIngest").addEventListener("click", async () => {
+        showBanner("");
+        resultsEl.innerHTML = "";
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          const path = document.getElementById("corpus").value.trim();
+          const args = { storeDir };
+          if (path) args.path = path;
+          log("ingest " + JSON.stringify(args));
+          const result = await c.callTool({ name: "ingest", arguments: args });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) {
+            showBanner(payload?.error?.message || "ingest failed");
+          }
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+
+      document.getElementById("btnInspect").addEventListener("click", async () => {
+        showBanner("");
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          log("inspect storeDir=" + storeDir);
+          const result = await c.callTool({ name: "inspect", arguments: { storeDir } });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) showBanner(payload?.error?.message || "inspect failed");
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+
+      document.getElementById("btnQuery").addEventListener("click", async () => {
+        showBanner("");
+        resultsEl.innerHTML = "";
+        try {
+          const c = await ensureClient();
+          const storeDir = document.getElementById("storeDir").value.trim() || ".pdf-to-rag";
+          const question = document.getElementById("question").value.trim();
+          if (!question) {
+            showBanner("Enter a question.");
+            return;
+          }
+          const topK = Number(document.getElementById("topK").value) || 5;
+          const hyde = document.getElementById("hyde").value.trim();
+          const mmr = document.getElementById("mmr").checked;
+          /** @type {Record<string, unknown>} */
+          const args = { question, storeDir, topK };
+          if (hyde) args.hypotheticalAnswer = hyde;
+          if (mmr) args.mmr = true;
+          log(
+            "query " +
+              JSON.stringify({ ...args, question: question.slice(0, 80) + (question.length > 80 ? "…" : "") })
+          );
+          const result = await c.callTool({ name: "query", arguments: args });
+          const payload = payloadFromResult(result);
+          log(JSON.stringify(payload, null, 2));
+          if (!payload?.ok) {
+            showBanner(payload?.error?.message || "query failed");
+            return;
+          }
+          const hits = payload.data?.hits ?? [];
+          if (!hits.length) {
+            resultsEl.textContent = "No hits (empty index or below min score).";
+            return;
+          }
+          for (let i = 0; i < hits.length; i++) {
+            const h = hits[i];
+            const div = document.createElement("div");
+            div.className = "hit";
+            const meta = document.createElement("div");
+            meta.className = "hit-meta";
+            meta.textContent = `#${i + 1} · ${h.fileName} · page ${h.page} · score=${typeof h.score === "number" ? h.score.toFixed(4) : h.score}`;
+            const body = document.createElement("div");
+            const excerpt = (h.text || "").slice(0, 1200);
+            body.textContent = excerpt;
+            div.appendChild(meta);
+            div.appendChild(body);
+            resultsEl.appendChild(div);
+          }
+        } catch (e) {
+          log(String(e));
+          showBanner(String(e.message || e));
+        }
+      });
+    </script>
+  </body>
+</html>

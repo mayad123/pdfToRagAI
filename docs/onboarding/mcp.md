@@ -63,7 +63,7 @@ npm run mcp:http        # demo UI http://127.0.0.1:3000/  ·  MCP http://127.0.0
 PDF_TO_RAG_HTTP_PORT=4000 node dist/mcp/server-http.js
 ```
 
-All the same tools and env vars apply. **`GET /`** serves a **vanilla HTML** demo that calls **`/mcp`** (see [use/mcp.md § Web demo UI](../use/mcp.md#web-demo-ui-f19)). The stdio server (`dist/mcp/server.js`) remains the recommended transport for local single-user setups. See [use/mcp.md § HTTP/SSE transport](../use/mcp.md#httpsse-transport-phase-5) for full options.
+All the same tools and env vars apply. **`GET`** serves **multi-page** static UI under `public/` (home, setup, about, and **`/demo.html`** calling **`/mcp`**); see [use/mcp.md § Web demo UI](../use/mcp.md#web-demo-ui-f19). The stdio server (`dist/mcp/server.js`) remains the recommended transport for local single-user setups. See [use/mcp.md § HTTP/SSE transport](../use/mcp.md#httpsse-transport-phase-5) for full options.
 
 ## Configure Cursor (MCP)
 

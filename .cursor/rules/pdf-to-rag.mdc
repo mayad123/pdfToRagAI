@@ -8,10 +8,11 @@ globs: "**/*.{ts,tsx,md,json}"
 ## Layers
 
 1. **CLI** (`src/commands/`, `src/cli.ts`) — argv and stdout only.
-2. **MCP** (`src/mcp/`) — stdio transport, tool schemas, path policy, JSON mapping. No ingest/query pipeline logic here.
-3. **Application** (`src/application/`) — orchestration: `runIngest`, `runQuery`, `runInspect`, hooks.
-4. **Domain** (`src/domain/`) — types only; no I/O, no imports from pdf/storage/mcp/cli.
-5. **Pipeline / infrastructure** (`src/ingestion/`, `src/pdf/`, `src/storage/`, etc.) — single-purpose modules.
+2. **MCP** (`src/mcp/`) — `server.ts`: stdio transport, Zod tool schemas, path policy, structured tool results; `server-http.ts`: Streamable HTTP on `/mcp`, safe static `GET` for files under `public/`; shared `paths.ts`, `tool-results.ts`, `version.ts`. No ingest/query pipeline logic here (handlers call application API only).
+3. **`public/`** — static HTML/CSS for the browser demo and onboarding pages only; no pipeline code or secrets.
+4. **Application** (`src/application/`) — orchestration: `runIngest`, `runQuery`, `runInspect`, hooks.
+5. **Domain** (`src/domain/`) — types only; no I/O, no imports from pdf/storage/mcp/cli.
+6. **Pipeline / infrastructure** (`src/ingestion/`, `src/pdf/`, `src/storage/`, etc.) — single-purpose modules.
 
 MCP and CLI must call the **library/application API** (`createAppDeps`, `runIngest`, …). Do not reimplement the pipeline inside `src/mcp/`.
 
@@ -33,7 +34,7 @@ MCP and CLI must call the **library/application API** (`createAppDeps`, `runInge
 ## Testing
 
 - Run `npm run build` after TypeScript changes.
-- Optional: `npm run mcp:smoke` after MCP changes; `npm run examples:smoke` / `examples:fixtures` for retrieval checks; `eval:*` scripts for gold-set eval (see `docs/management/project.md` § Testing and evaluation methodology).
+- Optional: `npm run mcp:smoke` after MCP changes; after HTTP or static `public/` route changes, spot-check `GET /`, `/demo.html`, `/styles.css` with `npm run mcp:http` (see `docs/use/mcp.md`); `npm run examples:smoke` / `examples:fixtures` for retrieval checks; `eval:*` scripts for gold-set eval (see `docs/management/project.md` § Testing and evaluation methodology).
 
 ## Cursor (one line)
 

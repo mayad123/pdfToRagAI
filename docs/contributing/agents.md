@@ -59,7 +59,7 @@ flowchart TB
 ## MCP integrator
 
 - **Owns:** `@modelcontextprotocol/sdk` wiring, stdio entrypoint, mapping library errors to MCP tool results.
-- **Outputs:** Changes under `src/mcp/` only, plus [use/mcp.md](../use/mcp.md) updates.
+- **Outputs:** Changes under `src/mcp/` only, plus [use/mcp.md](../use/mcp.md) updates (include `server-http.ts` static `public/` behavior and web demo URLs when those change).
 - **When:** MCP protocol or client compatibility work.
 - **Verify:** After changes, run `npm run build` and `npm run mcp:smoke`.
 - **Skill:** `pdf-rag-mcp`

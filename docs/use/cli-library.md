@@ -70,7 +70,7 @@ After **`ingest`**, check the index and run **`query`** from the **same working 
 
 ## MCP
 
-For AI clients and stdio MCP hosts, see [mcp.md](./mcp.md) and [onboarding/mcp.md](../onboarding/mcp.md).
+For AI clients and stdio MCP hosts, see [mcp.md](./mcp.md) and [onboarding/mcp.md](../onboarding/mcp.md). The HTTP entrypoint (`pdf-to-rag-mcp-http`, `npm run mcp:http`) also serves static pages under `public/` and provides **`/demo.html`** as a browser MCP client—see [mcp.md § Web demo UI](./mcp.md#web-demo-ui-f19).
 
 ## Deeper structure
 

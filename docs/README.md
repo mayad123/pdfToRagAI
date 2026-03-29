@@ -34,7 +34,7 @@ flowchart TB
 
 | Section | Path | Audience |
 |---------|------|----------|
-| **Use** | [use/cli-library.md](./use/cli-library.md), [use/mcp.md](./use/mcp.md), [use/comparison.md](./use/comparison.md) | CLI, library imports, MCP hosts, ecosystem positioning |
+| **Use** | [use/cli-library.md](./use/cli-library.md), [use/mcp.md](./use/mcp.md), [use/comparison.md](./use/comparison.md) | CLI, library imports, MCP hosts, ecosystem positioning; HTTP MCP also serves multi-page browser UI under `public/` (see [use/mcp.md § Web demo UI](./use/mcp.md#web-demo-ui-f19)) |
 | **Onboarding** | [onboarding/mcp.md](./onboarding/mcp.md) | First MCP setup from a clone or install |
 | **Management** | [management/requirements.md](./management/requirements.md), [management/roadmap.md](./management/roadmap.md) (**Phase 7 implementation playbook** for D6–D10 / F19 execution order), [management/project.md](./management/project.md) | **Requirements** (F/N/D), **phases** (0–7), **summary**, portfolio priorities, **testing methodology**, embedding reference |
 | **Architecture** | [architecture/overview.md](./architecture/overview.md) | Layers, `src/` layout, ingest/query flows |

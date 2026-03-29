@@ -74,7 +74,7 @@ flowchart TB
 | `cli.ts` | CLI entry; registers `ingest`, `query`, `inspect` commands. |
 | `commands/` | `ingest.ts`, `query.ts`, `inspect.ts` — parse args, print results. |
 | `application/` | `createAppDeps`, `runIngest`, `runQuery`, `runInspect`, `deps.ts`, `factory.ts` (selects Transformers vs Ollama from **`PDF_TO_RAG_EMBED_BACKEND`**, merges effective `embeddingModel` into config for Ollama). |
-| `mcp/` | `server.ts` (stdio), `server-http.ts` (HTTP/SSE, `pdf-to-rag-mcp-http`), `paths.ts`, `tool-results.ts`, `version.ts`. |
+| `mcp/` | `server.ts` (stdio), `server-http.ts` (HTTP/SSE, `pdf-to-rag-mcp-http`: Streamable HTTP on `/mcp` plus safe static `GET` for files under `public/`—`/`, `/setup.html`, `/about.html`, `/demo.html`, `/styles.css`, etc.), `paths.ts`, `tool-results.ts`, `version.ts`. |
 | `config/` | Defaults and `PdfToRagConfig` (`defaults.ts`). |
 | `domain/` | `document`, `page`, `chunk`, `metadata`, `results` types. |
 | `hooks/` | `Hooks` and lifecycle payloads for library users. |

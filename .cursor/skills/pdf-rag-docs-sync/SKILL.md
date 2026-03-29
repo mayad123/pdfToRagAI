@@ -15,7 +15,7 @@ description: >-
 2. `src/cli.ts` + `src/commands/*.ts` — CLI subcommands and flags
 3. `src/index.ts` — public library exports
 4. `src/config/defaults.ts` — chunk size, overlap, store dir, model, topK, recursive
-5. `src/mcp/server.ts` (+ `paths.ts`, `tool-results.ts` if needed) — tool names, args, structured outputs, error codes
+5. `src/mcp/server.ts` + `src/mcp/server-http.ts` (+ `paths.ts`, `tool-results.ts` if needed) — tool names, args, structured outputs, error codes; HTTP `/mcp` and static `public/` routes when documenting the browser demo
 6. `.cursor/commands/pdf-*.md` (including **`pdf-embeddings.md`**), `.cursor/agents/pdf-*.md`, `.cursor/skills/*/SKILL.md` — keep `docs/contributing/agents.md` and cross-links accurate
 
 ## Docs and config to align
@@ -29,8 +29,8 @@ description: >-
 ## DX-only pass (when user wants tone/examples only)
 
 - Focus on `README.md`, `docs/*`, `.cursor/commands/`, `.cursor/agents/`, examples in `docs/use/mcp.md`.
-- Verify CLI/MCP claims against `src/cli.ts`, `src/commands/`, `src/mcp/server.ts`.
-- Keep `package.json` `scripts` / `bin` listings in docs accurate (`build`, `dev`, `mcp:smoke`, `examples:smoke`, `examples:fixtures`, `eval:generate`, `eval:run`, `eval:compare`).
+- Verify CLI/MCP claims against `src/cli.ts`, `src/commands/`, `src/mcp/server.ts`, and `src/mcp/server-http.ts` when HTTP or static UI is mentioned.
+- Keep `package.json` `scripts` / `bin` listings in docs accurate (`build`, `dev`, `mcp:smoke`, `mcp:http`, `hooks:install`, `examples:smoke`, `examples:fixtures`, `demo:papers`, `eval:generate`, `eval:run`, `eval:compare`).
 - Prefer copy-pasteable snippets (absolute-path placeholders for MCP where needed).
 - If only tone is requested, keep structure/tables unless factually wrong.
 
@@ -39,7 +39,7 @@ description: >-
 - **Do not** document unimplemented features.
 - **Do not** edit `.cursor/plans/` unless the user explicitly asks.
 - After claiming build/MCP health, run `npm run build` and `npm run mcp:smoke` (or instruct the user) and report real outcomes only.
-- Prefer minimal edits; fix wrong paths, env names, missing `pdf-to-rag-mcp`, outdated tool lists.
+- Prefer minimal edits; fix wrong paths, env names, missing `pdf-to-rag-mcp` / `pdf-to-rag-mcp-http`, outdated tool lists (four MCP tools: `ingest`, `query`, `inspect`, `search`).
 
 ## Deliverable
 

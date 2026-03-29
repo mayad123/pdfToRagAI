@@ -10,7 +10,7 @@ description: >-
 ## Layers (state explicitly when advising)
 
 1. **CLI** — `src/commands/`, `src/cli.ts`: argv and stdout only.
-2. **MCP** — `src/mcp/`: stdio, Zod schemas, path policy, JSON mapping. **No** ingest/query pipeline logic.
+2. **MCP** — `src/mcp/`: `server.ts` (stdio, Zod tool schemas, path policy, structured results), `server-http.ts` (Streamable HTTP `/mcp`, safe static `GET` for `public/`), shared `paths.ts` / `tool-results.ts` / `version.ts`. **No** ingest/query pipeline logic in MCP handlers.
 3. **Application** — `src/application/`: `runIngest`, `runQuery`, `runInspect`, hooks.
 4. **Domain** — `src/domain/`: types only; no I/O; no imports from pdf/storage/mcp/cli.
 5. **Pipeline** — `src/ingestion/`, `src/pdf/`, `src/normalization/`, `src/chunking/`, `src/metadata/`, `src/storage/`, `src/query/`, `src/embeddings.ts`, `src/embedding/`: single-purpose modules.
@@ -24,7 +24,7 @@ description: >-
 
 ## When behavior or public API changes
 
-- Update or extend `docs/architecture/overview.md` (or a short ADR under `docs/architecture/`) if the decision crosses layers.
+- Update or extend `docs/architecture/overview.md` § Source tree (or a short ADR under `docs/architecture/`) if the decision crosses layers—that table is the authoritative map of `src/mcp/` vs application vs pipeline.
 
 ## Optional
 

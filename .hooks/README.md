@@ -14,7 +14,9 @@ That runs `git config core.hooksPath .hooks` (path is relative to the repository
 
 | File | Purpose |
 |------|---------|
-| `pre-commit` | Runs `npm run build` so broken TypeScript cannot be committed. |
+| `pre-commit` | Runs **`npm run build`** then **`npm test`** so broken TypeScript or failing unit tests cannot be committed. |
+
+**Not** run in the hook (run manually or in CI when needed): `npm run mcp:smoke`, `npm run examples:smoke`, `npm run examples:fixtures` — they are heavier or need more setup.
 
 ## Bypass
 

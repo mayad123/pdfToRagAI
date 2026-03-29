@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="pdf-to-rag: CLI, library, and MCP surfaces for local-first PDF search with citations."
+    />
+    <title>pdf-to-rag · About</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="site-logo" href="/">pdf-to-rag</a>
+        <nav class="site-nav" aria-label="Site">
+          <a href="/">Home</a>
+          <a href="/setup.html">Setup</a>
+          <a href="/about.html" aria-current="page">About</a>
+          <a href="/demo.html">Try demo</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <main id="main" class="page-main">
+        <h1>About this project</h1>
+        <p class="page-lead">
+          pdf-to-rag is a small, auditable pipeline: PDFs to text, chunks, embeddings, and a JSON vector store—with
+          multiple ways to drive the same logic.
+        </p>
+
+        <section class="about-section" aria-labelledby="surfaces-h">
+          <h2 id="surfaces-h">What ships</h2>
+          <ul>
+            <li><strong>Command line</strong> — ingest folders, run queries, inspect indexes from a terminal.</li>
+            <li><strong>Library</strong> — embed the same functions in your own Node.js tooling.</li>
+            <li><strong>Model Context Protocol (MCP)</strong> — expose <code>ingest</code>, <code>query</code>, and <code>inspect</code> to editors and agents (stdio or HTTP).</li>
+          </ul>
+        </section>
+
+        <section class="about-section" aria-labelledby="local-h">
+          <h2 id="local-h">Local-first and safety</h2>
+          <p>
+            Default embeddings use <strong>Transformers.js</strong> on your CPU; optional Ollama backends are supported.
+            The server only reads paths you allow via environment configuration—there is no silent upload of your PDFs to
+            a third party when you run it yourself.
+          </p>
+        </section>
+
+        <section class="about-section" aria-labelledby="web-h">
+          <h2 id="web-h">This website</h2>
+          <p>
+            The <a href="/demo.html">Try demo</a> page is a vanilla HTML client: it loads the official MCP TypeScript SDK
+            and talks to <code>/mcp</code> on the same host as these pages. Starting <code>npm run mcp:http</code> in a
+            terminal launches that host—there is no separate REST API layer for the demo.
+          </p>
+        </section>
+
+        <section class="about-section" aria-labelledby="stack-h">
+          <h2 id="stack-h">Stack highlights</h2>
+          <ul class="chips" aria-label="Technologies">
+            <li>TypeScript</li>
+            <li>Node.js 18+</li>
+            <li>MCP</li>
+            <li>Transformers.js</li>
+            <li>PDF extraction &amp; chunking</li>
+          </ul>
+        </section>
+
+        <section class="about-section">
+          <h2>Source &amp; README</h2>
+          <p>
+            Architecture diagrams, CI, and npm layout are in the repository README on
+            <a href="https://github.com/mayadevarajan/pdfToRag">GitHub</a>.
+          </p>
+        </section>
+
+        <div class="cta-row" style="margin-top: 1.5rem">
+          <a class="cta-primary" href="/setup.html">Setup guide</a>
+          <a class="cta-secondary" href="/demo.html">Try demo</a>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

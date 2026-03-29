@@ -19,16 +19,50 @@
  * The server runs in stateless mode — no session ID is issued; every POST
  * to /mcp is a fresh request. For stateful sessions, set
  * PDF_TO_RAG_HTTP_STATEFUL=1 to enable session tracking.
+ *
+ * Static site: GET requests for files under public/ (e.g. /, /index.html,
+ * /setup.html, /about.html, /demo.html, /styles.css) are served with path
+ * traversal rejected. MCP remains at /mcp only.
  */
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
-import { readFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readFileSync, existsSync, statSync } from "node:fs";
+import { join, dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createPdfToRagMcpServer } from "./server.js";
 
 const publicRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "public");
+const publicRootResolved = resolve(publicRoot);
+
+/** GET-only: resolve a path under public/; rejects traversal and non-files. */
+function resolvePublicFile(pathOnly: string): string | null {
+  const trimmed = (pathOnly.split("?")[0] || "/").replace(/\/+$/, "") || "/";
+  const rel = trimmed === "/" ? "index.html" : trimmed.replace(/^\/+/, "");
+  if (!rel || rel.includes("..") || rel.includes("\\") || rel.includes("\0")) return null;
+  if (!/^[a-zA-Z0-9._/-]+$/.test(rel)) return null;
+  const candidate = resolve(join(publicRoot, rel));
+  const prefix = publicRootResolved.endsWith(sep) ? publicRootResolved : publicRootResolved + sep;
+  if (!candidate.startsWith(prefix)) return null;
+  if (!existsSync(candidate)) return null;
+  try {
+    if (!statSync(candidate).isFile()) return null;
+  } catch {
+    return null;
+  }
+  return candidate;
+}
+
+function contentTypeFor(filePath: string): string {
+  const lower = filePath.toLowerCase();
+  if (lower.endsWith(".html")) return "text/html; charset=utf-8";
+  if (lower.endsWith(".css")) return "text/css; charset=utf-8";
+  if (lower.endsWith(".js")) return "text/javascript; charset=utf-8";
+  if (lower.endsWith(".svg")) return "image/svg+xml";
+  if (lower.endsWith(".ico")) return "image/x-icon";
+  if (lower.endsWith(".json")) return "application/json; charset=utf-8";
+  return "application/octet-stream";
+}
 
 const port = parseInt(
   process.argv.find((a, i) => process.argv[i - 1] === "--port") ??
@@ -69,24 +103,23 @@ const httpServer = createServer(async (req, res) => {
 
   const pathOnly = (req.url ?? "/").split("?")[0] ?? "/";
 
-  if (req.method === "GET" && (pathOnly === "/" || pathOnly === "/index.html")) {
-    const htmlPath = join(publicRoot, "index.html");
-    if (existsSync(htmlPath)) {
+  if (req.method === "GET") {
+    const filePath = resolvePublicFile(pathOnly);
+    if (filePath) {
       res.writeHead(200, {
-        "Content-Type": "text/html; charset=utf-8",
+        "Content-Type": contentTypeFor(filePath),
         ...corsHtml,
       });
-      res.end(readFileSync(htmlPath));
-    } else {
-      res.writeHead(503, { "Content-Type": "text/plain; charset=utf-8", ...corsHtml });
-      res.end("public/index.html is missing (clone the full repository).");
+      res.end(readFileSync(filePath));
+      return;
     }
-    return;
   }
 
   if (pathOnly !== "/mcp") {
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Not found. GET / for the web demo; MCP Streamable HTTP is at POST/GET /mcp.");
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end(
+      "Not found. Static pages: GET /, /setup.html, /about.html, /demo.html; MCP Streamable HTTP at POST/GET /mcp."
+    );
     return;
   }
 

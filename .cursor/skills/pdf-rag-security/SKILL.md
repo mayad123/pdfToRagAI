@@ -10,6 +10,7 @@ description: >-
 ## Scope
 
 - `src/mcp/paths.ts` — allowlist behavior
+- `src/mcp/server-http.ts` — static file resolution under `public/` (traversal rejection, regular files only, resolved path prefix under `publicRoot`); default bind host (`127.0.0.1`) and guidance not to expose wide without TLS/auth
 - `docs/use/mcp.md` — user-facing security and env guidance
 - `package.json` dependencies — notable adds/upgrades (`@modelcontextprotocol/sdk`, `pdfjs-dist`, `@xenova/transformers`, `zod`, etc.)
 - Any new code paths that read/write paths from user or tool input
@@ -24,6 +25,7 @@ description: >-
 2. Examples do not recommend overly broad `PDF_TO_RAG_ALLOWED_DIRS` or writing indexes to world-shared dirs without warning.
 3. No secrets, tokens, or unsafe “curl | sh” patterns in docs.
 4. Align narrative with N1–N4 in `docs/management/requirements.md` where relevant (including **local Ollama**: operators must trust **`OLLAMA_HOST`**; chunk text is sent to that HTTP endpoint).
+5. Static `GET` handlers cannot escape `public/` (no `..`, no directories served as files, no sensitive paths under repo root).
 
 ## Output format
 

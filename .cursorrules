@@ -6,4 +6,6 @@ Documentation index: **`docs/README.md`**. Management: **`docs/management/requir
 
 **Embeddings:** default **Transformers.js** (`createEmbedder` / `createTransformersEmbedder`); optional fast path **`PDF_TO_RAG_EMBED_BACKEND=ollama`** with **`OLLAMA_EMBED_MODEL`** — see **`docs/management/requirements.md`** (F7, N3) and **`/pdf-embeddings`**.
 
+**Web demo:** multi-page UI in **`public/`**; run **`npm run mcp:http`** after **`npm run build`** (same process serves static pages and **`/mcp`**). Details: **`docs/use/mcp.md`** § Web demo UI.
+
 Manual slash commands: **`/pdf-*`** in **`.cursor/commands/`**. Subagents: **`.cursor/agents/`**. Full doc sync: **`/pdf-update-docs`**.
