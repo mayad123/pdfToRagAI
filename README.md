@@ -277,3 +277,9 @@ See <a href="docs/management/requirements.md">docs/management/requirements.md</a
 ## License
 
 [MIT](LICENSE)
+
+---
+
+## Addendum
+
+This project was created and iterated with [**Cursor**](https://cursor.com), using repository **rules**, **skills** (`.cursor/skills/pdf-rag-*`), **slash commands** (`.cursor/commands/`), and **subagents** (`.cursor/agents/`). How those pieces map to contribute flows is summarized in [docs/contributing/agents.md](docs/contributing/agents.md).
