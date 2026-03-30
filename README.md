@@ -3,13 +3,34 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/mayad123/pdfToRagAI/ci.yml?branch=main&label=CI)](https://github.com/mayad123/pdfToRagAI/actions/workflows/ci.yml)
 · [Ecosystem comparison](docs/use/comparison.md)
 
-**Try it:** `npx pdf-to-rag ingest ./path/to/pdfs` then `npx pdf-to-rag query "Your natural-language question"` (requires [Node.js 18+](https://nodejs.org/); first run may download the default embedding model).
+**Try it:** `npx pdf-to-rag ingest ./path/to/pdfs` then `npx pdf-to-rag query "Your natural-language question"` — or **`npx pdf-to-rag serve ./path/to/pdfs`** and open the printed URL for the **browser UI** (requires [Node.js 18+](https://nodejs.org/); first run may download the default embedding model).
 
 **What it is:** pdf-to-rag builds a **local-first** index over folders of PDFs—default embeddings use **Transformers.js** on your machine (**no paid API keys**)—and **query** returns **ranked verbatim passages** with **file name and page** so you can cite sources instead of trusting a paraphrase.
 
 **Who it’s for:** developers and researchers who want a **small, auditable** pipeline plus **CLI**, **library**, and **MCP** (`stdio` or HTTP) surfaces—without committing to a large agent framework.
 
-![Terminal-style preview: ingest then query with citations](docs/assets/hero-terminal.svg)
+### Web UI (browser)
+
+After **`npm run build`**, start **`npm run mcp:http`** (with `PDF_TO_RAG_CWD` / `PDF_TO_RAG_ALLOWED_DIRS` / optional `PDF_TO_RAG_SOURCE_DIR` as in [docs/use/mcp.md](docs/use/mcp.md)) **or** run **`npx pdf-to-rag serve ./path/to/pdfs`**, then open the URL shown (e.g. `http://127.0.0.1:3000/`). The same process serves static pages from **`public/`**:
+
+| Page | What you do there |
+|------|-------------------|
+| **`/`** (home) | Overview and links into the rest of the UI |
+| **`/setup.html`** | Copy-paste commands and optional Cursor MCP config |
+| **`/demo.html`** | **Ingest** and **Query** in the browser (talks to **`/mcp`** on the same origin) |
+| **`/eval-report.html`** | View **retrieval traces** from Try demo and optional **eval:matrix**-style reports over HTTP |
+
+The demo loads the MCP client from **`/vendor/mcp-sdk.js`** (built by `npm run build`). The UI is for **localhost**: it connects your browser to the **local** MCP server and index on your machine, not to a cloud document service.
+
+<p align="center">
+  <img src="./docs/assets/hero-web-ui.svg" alt="Browser UI preview: header nav, Try demo, ranked hits with file, page, and similarity bars (matches public styling)" width="720" />
+</p>
+
+**CLI / terminal (same pipeline):**
+
+<p align="center">
+  <img src="./docs/assets/hero-terminal.svg" alt="Terminal-style preview: ingest then query with citations" width="720" />
+</p>
 
 ---
 
@@ -17,7 +38,7 @@
 
 - **Researchers and builders** who want searchable PDF corpora without sending document text to a cloud embedding API.
 - **Citation-aware retrieval:** each hit is a stored chunk string plus metadata (`fileName`, `page`, `score`, `chunkId`), suitable for footnotes or UI snippets.
-- **Not in scope:** a single LLM “answer” that merges hits; hosts or models compose answers **from** the returned excerpts if needed.
+- **Not in scope:** a single synthesized “answer” field on **`query`**; hosts may compose prose **from** returned excerpts.
 
 ---
 
@@ -165,9 +186,9 @@ Full file-level map: <a href="docs/architecture/overview.md">docs/architecture/o
 <details>
 <summary><strong>MCP server (AI tools)</strong></summary>
 
-After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <code>pdf-to-rag-mcp-http</code> (HTTP/SSE on port 3000) for hosts that cannot use stdio. Configure corpus access with <code>PDF_TO_RAG_CWD</code>, <code>PDF_TO_RAG_ALLOWED_DIRS</code>, and optionally <code>PDF_TO_RAG_SOURCE_DIR</code>. The <code>query</code> tool accepts an optional <code>hypotheticalAnswer</code> (HyDE) — pass a caller-generated hypothetical answer to improve retrieval for short or abstract questions. Enable cross-encoder reranking by setting <code>PDF_TO_RAG_RERANK_MODEL</code> to a Hugging Face cross-encoder id. Start here: <a href="docs/onboarding/mcp.md">docs/onboarding/mcp.md</a>; full reference: <a href="docs/use/mcp.md">docs/use/mcp.md</a>.
+After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <code>pdf-to-rag-mcp-http</code> (HTTP/SSE on port 3000) for hosts that cannot use stdio. Configure corpus access with <code>PDF_TO_RAG_CWD</code>, <code>PDF_TO_RAG_ALLOWED_DIRS</code>, and optionally <code>PDF_TO_RAG_SOURCE_DIR</code>. The <code>query</code> tool accepts an optional <code>hypotheticalAnswer</code> (HyDE). Enable cross-encoder reranking with <code>PDF_TO_RAG_RERANK_MODEL</code>. Start here: <a href="docs/onboarding/mcp.md">docs/onboarding/mcp.md</a>; full reference: <a href="docs/use/mcp.md">docs/use/mcp.md</a>.
 
-<strong>Browser UI (HTTP server):</strong> <code>npm run mcp:http</code> serves multi-page static content from <code>public/</code>—home (<code>/</code>), setup (<code>/setup.html</code>), about (<code>/about.html</code>), and an interactive demo (<code>/demo.html</code>) that talks to <code>/mcp</code> on the same origin. See <a href="docs/use/mcp.md#web-demo-ui-f19">docs/use/mcp.md § Web demo UI</a>.
+<strong>Browser UI (HTTP server):</strong> See the <strong>Web UI (browser)</strong> section and diagram at the top of this README. <code>npm run mcp:http</code> (with <code>PDF_TO_RAG_*</code> set) or <code>pdf-to-rag serve &lt;corpus-dir&gt;</code> (env auto-configured) serves <code>public/</code>—including <code>/demo.html</code> → <code>/mcp</code> and <code>/eval-report.html</code>. The demo loads the MCP SDK from <code>public/vendor/mcp-sdk.js</code>, built by <code>npm run build</code> (no CDN required). Full reference: <a href="docs/use/mcp.md#web-demo-ui-f19">docs/use/mcp.md</a> (Web demo UI).
 
 <strong>Cursor:</strong> rules in <a href=".cursor/rules/">.cursor/rules/</a>, skills in <a href=".cursor/skills/">.cursor/skills/</a> (<code>pdf-rag-*</code>), commands in <a href=".cursor/commands/">.cursor/commands/</a>.
 
@@ -179,10 +200,11 @@ After <code>npm run build</code>, run <code>pdf-to-rag-mcp</code> (stdio) or <co
 ```bash
 pdf-to-rag ingest ./docs          # index corpus (recursive by default; unchanged PDFs skipped)
 pdf-to-rag query your question    # semantic search; summary line + passages + citations
-pdf-to-rag inspect               # chunk count / files (no embedder load)
+pdf-to-rag inspect               # chunk count, files, embedding dim; optional F13 fingerprints (no embedder load)
+pdf-to-rag serve ./docs           # HTTP UI + /mcp; sets PDF_TO_RAG_* from this directory (no env for default case)
 ```
 
-Options: <code>--store-dir</code>, ingest <code>--chunk-size</code>, <code>--overlap</code>, <code>--no-recursive</code>, <code>--no-strip-margins</code>, query <code>--top-k</code>.
+Options: <code>--store-dir</code>, ingest <code>--chunk-size</code>, <code>--overlap</code>, <code>--no-recursive</code>, <code>--no-strip-margins</code>, query <code>--top-k</code>. <strong><code>serve</code>:</strong> <code>--port</code>, <code>--host</code>, <code>--store-dir</code>.
 
 </details>
 
@@ -211,7 +233,7 @@ for (const h of hits) {
 }
 
 const stats = await runInspect(cwd, config);
-console.log(stats.chunkCount, stats.files);
+console.log(stats.chunkCount, stats.embeddingDim, stats.files);
 ```
 
 Use a custom <code>Hooks</code> object for <code>beforeIngest</code>, <code>afterChunking</code>, <code>afterIndexing</code>, <code>beforeQuery</code>. <code>runInspect</code> does not load the embedding model.
@@ -221,7 +243,7 @@ Use a custom <code>Hooks</code> object for <code>beforeIngest</code>, <code>afte
 <details>
 <summary><strong>Embeddings: Transformers.js (default) and Ollama (optional)</strong></summary>
 
-<strong>Default:</strong> <a href="https://github.com/xenova/transformers.js">Transformers.js</a> / ONNX in Node — no paid API; suitable for small corpora; large multi-PDF folders can be slow on CPU. Model download on first use (~tens of MB); set <code>TRANSFORMERS_CACHE</code> to pin cache location.
+<strong>Default:</strong> <a href="https://github.com/xenova/transformers.js">Transformers.js</a> / ONNX in Node — no paid API and <strong>no Ollama</strong>; suitable for small corpora; large multi-PDF folders can be slow on CPU. <code>npm install</code> pulls the library only; ONNX weights download on <strong>first embed</strong> (ingest, query, or <code>npm run verify:local-model</code> after <code>npm run build</code>), typically tens to ~100&nbsp;MB. Set <code>TRANSFORMERS_CACHE</code> to pin the cache directory.
 
 <strong>Optional fast path:</strong> <code>PDF_TO_RAG_EMBED_BACKEND=ollama</code>, <code>OLLAMA_EMBED_MODEL</code> (e.g. <code>nomic-embed-text</code> after <code>ollama pull</code>), optional <code>OLLAMA_HOST</code> (default <code>http://127.0.0.1:11434</code>). Batching: <code>OLLAMA_EMBED_BATCH_SIZE</code>, <code>OLLAMA_EMBED_CONCURRENCY</code>. With GPU or Apple Metal, full ingest of an <code>examples/</code>-scale tree can be on the order of minutes; CPU-only may be much slower.
 
@@ -235,10 +257,11 @@ See <a href="docs/management/requirements.md">docs/management/requirements.md</a
 <summary><strong>Examples and tests</strong></summary>
 
 - PDFs (or your own) under <a href="examples/">examples/</a> — <a href="examples/README.md">examples/README.md</a>
+- <code>npm run verify:local-model</code> (repo) or <code>node node_modules/pdf-to-rag/scripts/verify-local-model.mjs</code> (installed package) — confirms default Transformers embeddings work without Ollama (needs network on first model download)
 - <code>npm run examples:smoke</code> — minimal ingest + query
 - <code>npm run examples:fixtures</code> — <code>examples/query-fixtures.json</code> NL + substring suite
 - <code>npm run demo:papers</code> — longer scripted demo (see <a href="examples/README.md">examples/README.md</a>)
-- <code>npm run eval:generate</code> / <code>eval:run</code> / <code>eval:compare</code> — synthetic gold-set generation, retrieval metrics, and A/B diff (see <a href="docs/management/project.md#testing-and-evaluation-methodology">docs/management/project.md</a> § Testing and evaluation methodology)
+- <code>npm run eval:generate</code> / <code>eval:run</code> / <code>eval:compare</code> — synthetic gold-set generation, single-profile retrieval metrics, and A/B diff; <code>npm run eval:matrix</code> — multi-scenario matrix (linear vs HNSW, MMR, rerank, HyDE) on the application API (see <a href="docs/management/project.md#testing-and-evaluation-methodology">docs/management/project.md</a> § Testing and evaluation methodology; rationale: <a href="docs/research/eval-retrieval-framework.md">docs/research/eval-retrieval-framework.md</a>; golden schema: <a href="examples/eval-golden/README.md">examples/eval-golden/README.md</a>)
 
 </details>
 

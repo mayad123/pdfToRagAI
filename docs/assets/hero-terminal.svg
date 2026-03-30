@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="280" viewBox="0 0 720 280" role="img" aria-label="Terminal-style preview of pdf-to-rag ingest and query">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -10,11 +11,11 @@
   <circle cx="36" cy="40" r="6" fill="#ef4444"/>
   <circle cx="58" cy="40" r="6" fill="#eab308"/>
   <circle cx="80" cy="40" r="6" fill="#22c55e"/>
-  <text x="104" y="45" fill="#64748b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">pdf-to-rag  zsh</text>
+  <text x="104" y="45" fill="#64748b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">pdf-to-rag - zsh</text>
   <text x="32" y="88" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">$ npx pdf-to-rag ingest ./examples</text>
-  <text x="32" y="118" fill="#86efac" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">Indexed & chunks ’ .pdf-to-rag</text>
-  <text x="32" y="158" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">$ npx pdf-to-rag query &quot;What does the corpus say about &?&quot;</text>
-  <text x="32" y="188" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">Returned 3 passage(s)  topK=5</text>
-  <text x="32" y="218" fill="#cbd5e1" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">[1] paper.pdf  page 4  score=0.72</text>
-  <text x="48" y="238" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">&verbatim excerpt suitable for citation&</text>
+  <text x="32" y="118" fill="#86efac" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">Indexed 12 chunks -&gt; .pdf-to-rag</text>
+  <text x="32" y="158" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">$ npx pdf-to-rag query &quot;What does the corpus say?&quot;</text>
+  <text x="32" y="188" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">Returned 3 passage(s), topK=5</text>
+  <text x="32" y="218" fill="#cbd5e1" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">[1] paper.pdf, page 4, score=0.72</text>
+  <text x="48" y="238" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">&quot;verbatim excerpt suitable for citation&quot;</text>
 </svg>

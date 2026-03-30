@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="380" viewBox="0 0 720 380" role="img" aria-label="pdf-to-rag browser UI: site header and Try demo results with ranked passages">
+  <defs>
+    <linearGradient id="pageBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8f4fc"/>
+      <stop offset="55%" stop-color="#dbeefe"/>
+      <stop offset="100%" stop-color="#e8f4fc"/>
+    </linearGradient>
+    <linearGradient id="scoreBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0c8ecf"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
+      <feOffset in="blur" dx="0" dy="6" result="offsetBlur"/>
+      <feFlood flood-color="#0c6496" flood-opacity="0.12" result="color"/>
+      <feComposite in="color" in2="offsetBlur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="720" height="380" fill="url(#pageBg)"/>
+
+  <rect x="0" y="0" width="720" height="52" fill="#ffffff" fill-opacity="0.82"/>
+  <line x1="0" y1="52" x2="720" y2="52" stroke="#d3e8f5" stroke-width="1"/>
+  <text x="20" y="33" fill="#0f2d3d" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="17" font-weight="700">pdf-to-rag</text>
+  <text x="140" y="31" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Home</text>
+  <text x="198" y="31" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Setup</text>
+  <text x="268" y="31" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">About</text>
+  <rect x="326" y="12" width="86" height="28" rx="14" fill="#d4eefb"/>
+  <text x="338" y="31" fill="#0c8ecf" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Try demo</text>
+  <text x="426" y="31" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Eval report</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="72" width="672" height="288" rx="12" fill="#ffffff" stroke="#d3e8f5" stroke-width="1"/>
+  </g>
+  <text x="44" y="104" fill="#1e3a4f" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="700">Try demo (MCP over HTTP)</text>
+  <text x="44" y="128" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12">Ingest, then Query: ranked chunks with file, page, and cosine similarity (same as CLI).</text>
+
+  <text x="44" y="158" fill="#1e3a4f" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="700">Results</text>
+
+  <rect x="44" y="170" width="632" height="72" rx="8" fill="#ffffff" stroke="#d3e8f5" stroke-width="1"/>
+  <text x="56" y="192" fill="#0c8ecf" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Hit 1</text>
+  <text x="108" y="192" fill="#1e3a4f" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11">example.pdf, page 4</text>
+  <text x="56" y="210" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="10">Similarity: 0.7240</text>
+  <rect x="56" y="216" width="200" height="7" rx="4" fill="#d3e8f5"/>
+  <rect x="56" y="216" width="145" height="7" rx="4" fill="url(#scoreBar)"/>
+  <text x="56" y="236" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="10">Verbatim excerpt text from the chunk ...</text>
+
+  <rect x="44" y="252" width="632" height="72" rx="8" fill="#ffffff" stroke="#d3e8f5" stroke-width="1"/>
+  <text x="56" y="274" fill="#0c8ecf" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600">Hit 2</text>
+  <text x="108" y="274" fill="#1e3a4f" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11">notes.pdf, page 12</text>
+  <text x="56" y="292" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="10">Similarity: 0.6512</text>
+  <rect x="56" y="298" width="200" height="7" rx="4" fill="#d3e8f5"/>
+  <rect x="56" y="298" width="118" height="7" rx="4" fill="url(#scoreBar)"/>
+  <text x="56" y="318" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="10">Another cited passage with source traceability ...</text>
+
+  <text x="44" y="356" fill="#4a6d82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="10">Also: Eval report - retrieval traces &amp; matrix-style metrics when the server is running.</text>
+</svg>
